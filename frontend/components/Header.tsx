@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
+import { PrimaryButton, SecondaryButton } from './Buttons';
+import { BiUserCircle } from 'react-icons/bi';
 
 export default function Header() {
   const router = useRouter();
@@ -15,7 +17,9 @@ export default function Header() {
     <Container>
       <LogoContainer>
         <Link href="/">
-          <a className="logo">fractron</a>
+          <a className="logo">
+            frac<span>tron</span>
+          </a>
         </Link>
         <Link href="/explore">
           <a className="choice">Explore</a>
@@ -25,7 +29,13 @@ export default function Header() {
         </Link>
       </LogoContainer>
       <ButtonContainer>
-        <Button>Connect</Button>
+        <Link href="/fractionalize">
+          <a>
+            <SecondaryButton>Fractionalize</SecondaryButton>
+          </a>
+        </Link>
+        <BiUserCircle />
+        {/* <PrimaryButton>Connect</PrimaryButton> */}
       </ButtonContainer>
     </Container>
   );
@@ -52,6 +62,9 @@ const LogoContainer = styled.div`
     font-size: ${({ theme }) => theme.typeScale.header2};
     font-weight: 700;
     margin-right: 1rem;
+    span {
+      color: ${({ theme }) => theme.colors.secondary};
+    }
     :hover {
       cursor: pointer;
     }
@@ -59,29 +72,28 @@ const LogoContainer = styled.div`
 
   .choice {
     padding-top: 0.5rem;
-    font-weight: 400;
+    font-weight: 600;
+    opacity: 0.6;
 
     :hover {
       cursor: pointer;
-      font-weight: 600;
+      opacity: 1;
     }
   }
 `;
 
 const ButtonContainer = styled.div`
-  justify-self: end;
-`;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 
-const Button = styled.button`
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.background.primary};
-  padding: 0.5rem 1.75rem;
-  border-radius: 5px;
-  font-size: ${({ theme }) => theme.typeScale.header6};
-  font-weight: 600;
-  cursor: pointer;
-
-  :hover {
-    background-color: ${({ theme }) => theme.colors.secondary};
+  svg {
+    height: 45px;
+    width: 45px;
+    opacity: 0.8;
+    :hover {
+      cursor: pointer;
+      opacity: 1;
+    }
   }
 `;
