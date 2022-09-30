@@ -1,11 +1,29 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
-import { PrimaryButton, SecondaryButton } from './Buttons';
 import { BiUserCircle } from 'react-icons/bi';
+import { useContext } from 'react';
+import { ConnectedContext } from '../pages/_app';
+import { PrimaryButton, SecondaryButton } from './Buttons';
 
 export default function Header() {
+  const { connected, setConnected } = useContext(ConnectedContext);
   const router = useRouter();
+
+  const handleConnect = async () => {
+    try {
+      let response = await window.tronLink.request({
+        method: 'tron_requestAccounts',
+      });
+      console.log(response);
+      if (response.code === 200) {
+        setConnected(true);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const page =
     router.asPath === '/explore'
       ? 'explore'
@@ -34,8 +52,17 @@ export default function Header() {
             <SecondaryButton>Fractionalize</SecondaryButton>
           </a>
         </Link>
-        <BiUserCircle />
-        {/* <PrimaryButton>Connect</PrimaryButton> */}
+        {connected ? (
+          <BiUserCircle />
+        ) : (
+          <PrimaryButton
+            onClick={
+              connected ? () => console.log('already connected') : handleConnect
+            }
+          >
+            Connect
+          </PrimaryButton>
+        )}
       </ButtonContainer>
     </Container>
   );

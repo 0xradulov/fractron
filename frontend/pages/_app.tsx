@@ -1,10 +1,53 @@
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { createContext, useEffect, useState } from 'react';
 import { ThemeProvider } from 'styled-components';
+const TronWeb = require('tronweb');
 import Layout from '../components/Layout';
 import { theme, GlobalStyle } from '../design/themes';
 
+export const TronWebContext = createContext<any>('');
+export const TronWebFallbackContext = createContext<any>('');
+
+declare global {
+  interface Window {
+    tronWeb: any;
+    tronLink: any;
+  }
+}
+
+export type ConnectedType = {
+  connected: boolean;
+  setConnected: (c: boolean) => void;
+};
+
+export const ConnectedContext = createContext<ConnectedType>({
+  connected: false,
+  setConnected: () => {},
+});
+
 function MyApp({ Component, pageProps }: AppProps) {
+  const [tronWeb, setTronWeb] = useState('');
+  const [tronWebFallback, setTronWebFallback] = useState('');
+  const [connected, setConnected] = useState(false);
+
+  useEffect(() => {
+    const tronWeb2 = new TronWeb({
+      fullHost: process.env.mainnet2,
+      privateKey: process.env.fallbackPK,
+    });
+    setTronWebFallback(tronWeb2);
+    if (window && window.tronWeb) {
+      setTronWeb(window.tronWeb);
+      if (window.tronLink.ready) {
+        setConnected(true);
+      }
+      // window.tronLink.request({ method: 'tron_requestAccounts' });
+    } else {
+      console.log('download tronlink');
+    }
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Head>
@@ -13,9 +56,15 @@ function MyApp({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <GlobalStyle />
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <TronWebContext.Provider value={tronWeb}>
+        <TronWebFallbackContext.Provider value={tronWebFallback}>
+          <ConnectedContext.Provider value={{ connected, setConnected }}>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </ConnectedContext.Provider>
+        </TronWebFallbackContext.Provider>
+      </TronWebContext.Provider>
     </ThemeProvider>
   );
 }

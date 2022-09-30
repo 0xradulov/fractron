@@ -2,16 +2,26 @@ import type { NextPage } from 'next';
 import styled from 'styled-components';
 import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
 import { BiChevronRight } from 'react-icons/bi';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { PrimaryButton, SecondaryButton } from '../components/Buttons';
+import { TronWebContext, TronWebFallbackContext } from '../pages/_app';
 
 const Home: NextPage = () => {
+  const tronWeb = useContext(TronWebContext);
+  const tronWebFallback = useContext(TronWebFallbackContext);
   const [currentStage, setCurrentStage] = useState('select');
   const { register, handleSubmit, watch, formState } = useForm<any>();
+  const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
     console.log(data);
   };
+
+  const onSearch: SubmitHandler<any> = async (data) => {
+    console.log(data);
+    console.log('tw:', tronWeb);
+    console.log('twf:', tronWebFallback);
+  };
+
   return (
     <Outer>
       <div className="wrapper">
@@ -44,10 +54,34 @@ const Home: NextPage = () => {
               wallet. Be aware, you cannot add to the NFTs in a vault once
               created. Read our guides for more information.
             </p>
-            <input placeholder="search your NFTs..." />
+            <LeftForm onSubmit={searchForm.handleSubmit(onSearch)}>
+              <LeftSearch>
+                <div>
+                  <label>Contract address</label>
+                  <input
+                    placeholder="e.g TWi53fvZgTsW8tvAQmYVeThnBeyJqEfJhQ"
+                    {...searchForm.register('contractAddress', {
+                      required: true,
+                    })}
+                  />
+                </div>
+                <div>
+                  <label>NFT Token ID</label>
+                  <input
+                    placeholder="e.g 3546"
+                    {...searchForm.register('tokenId', { required: true })}
+                  />
+                </div>
+                <button type="submit">Search</button>
+              </LeftSearch>
+              {(searchForm.formState.errors.contractAddress ||
+                searchForm.formState.errors.tokenId) && (
+                <span>Contract Address and token ID are required</span>
+              )}
+            </LeftForm>
           </Left>
           <Right>
-            <StyledForm onSubmit={handleSubmit(onSubmit)}>
+            <RightForm onSubmit={handleSubmit(onSubmit)}>
               <p className="header">Vault details</p>
 
               <div className="single">
@@ -79,7 +113,7 @@ const Home: NextPage = () => {
                 <span>This field is required</span>
               )}
               <Button type="submit">Continue</Button>
-            </StyledForm>
+            </RightForm>
           </Right>
         </Content>
       </div>
@@ -101,17 +135,77 @@ const Button = styled.button`
   }
 `;
 
+const LeftSearch = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    input {
+      width: 100%;
+    }
+  }
+  button {
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.background.primary};
+    padding: 0.7rem 2.25rem;
+    border-radius: 5px;
+    font-size: ${({ theme }) => theme.typeScale.header6};
+    font-weight: 600;
+    cursor: pointer;
+
+    :hover {
+      background-color: ${({ theme }) => theme.colors.secondary};
+    }
+  }
+`;
+
 const Double = styled.div`
   display: flex;
   gap: 1rem;
   div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    input {
+      width: 100%;
+    }
+  }
+`;
+
+const LeftForm = styled.form`
+  /* border: 1px solid ${({ theme }) => theme.background.senary}; */
+  /* border-radius: 20px; */
+  /* padding: 2rem; */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  input {
+    /* width: 100%; */
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 2px solid ${({ theme }) => theme.background.senary};
+  }
+
+  .single {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
+
+  label {
+    opacity: 0.8;
+    font-size: 14px;
+    font-weight: 500;
+  }
 `;
 
-const StyledForm = styled.form`
+const RightForm = styled.form`
   border: 1px solid ${({ theme }) => theme.background.senary};
   border-radius: 20px;
   padding: 2rem;
