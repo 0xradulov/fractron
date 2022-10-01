@@ -19,15 +19,9 @@ const Home: NextPage = () => {
             <Button>Explore fractions</Button>
           </Left>
           <Right>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
+            {new Array(81).fill(0).map((i) => {
+              return <div key={Math.random()}></div>;
+            })}
           </Right>
         </First>
       </div>
@@ -161,24 +155,24 @@ const Left = styled.div`
 
 const Right = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 0.35rem;
   div {
-    height: 175px;
-    width: 175px;
+    height: 50px;
+    width: 50px;
     background: ${({ theme }) => theme.colors.primary};
   }
 
   @media screen and (max-width: 1200px) {
     div {
-      height: 150px;
-      width: 150px;
+      height: 40px;
+      width: 40px;
     }
   }
   @media screen and (max-width: 1040px) {
     div {
-      height: 125px;
-      width: 125px;
+      height: 30px;
+      width: 30px;
     }
   }
 `;

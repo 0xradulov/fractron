@@ -6,10 +6,53 @@ import { useContext, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { TronWebContext, TronWebFallbackContext } from '../pages/_app';
 
+type TokenURI = {
+  tokenId: string;
+  name: string;
+  image: string;
+  description: string;
+  owner: string;
+};
+
+const trimAddress = (address: string) => {
+  return address.slice(0, 10) + '...' + address.slice(30, address.length);
+};
+
+const whitelist: { [key: string]: any } = {
+  TWi53fvZgTsW8tvAQmYVeThnBeyJqEfJhQ: {
+    name: 'BAYCTRON',
+    baseURI: 'https://tronapes.com/api/v1/nft/ape/',
+    endURI: '',
+    ipfsImage: false,
+  },
+  TLHjJLASw223bG6FNGjfzBJmeWeVMb7Li7: {
+    name: 'MoonCatz',
+    baseURI: '',
+    endURI: '',
+    ipfsImage: false,
+  },
+  TJjKSaj9UD9tQ27zvN6hpXiCwN2VsdNW7P: {
+    name: 'MAYCTRON',
+    baseURI: 'https://tronapes.com/api/v1/nft/mutant/',
+    endURI: '',
+    ipfsImage: false,
+  },
+  TQ4Z2CrPCJpEw8RfW1w6zSoBhhMtsnqdP9: {
+    name: 'TRONBULLCLUB',
+    baseURI:
+      'https://ipfs.io/ipfs/QmVEWNACYMp9DKMZWvYBXdQWVt9UjgFFtiLuyj1ibFgy5R/',
+    endURI: '.json',
+    ipfsImage: true,
+  },
+};
+
 const Home: NextPage = () => {
   const tronWeb = useContext(TronWebContext);
   const tronWebFallback = useContext(TronWebFallbackContext);
   const [currentStage, setCurrentStage] = useState('select');
+  const [searchedTokenURI, setSearchedTokenURI] = useState<TokenURI | null>(
+    null
+  );
   const { register, handleSubmit, watch, formState } = useForm<any>();
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
@@ -17,9 +60,28 @@ const Home: NextPage = () => {
   };
 
   const onSearch: SubmitHandler<any> = async (data) => {
-    console.log(data);
-    console.log('tw:', tronWeb);
-    console.log('twf:', tronWebFallback);
+    const collection = whitelist[data.contractAddress];
+    if (!collection) {
+      console.log("we don't support this collection yet!");
+      return;
+    }
+
+    try {
+      const nftContract = await tronWeb.contract().at(data.contractAddress);
+      const owner = await nftContract.ownerOf(data.tokenId).call();
+      const metadataURI = collection.baseURI + data.tokenId + collection.endURI;
+      const response = await fetch(metadataURI);
+      const uri = await response.json();
+      console.log(uri);
+      if (collection.ipfsImage) {
+        uri.image = 'https://ipfs.io/ipfs/' + uri.image.slice(7);
+      }
+      console.log(uri.image);
+      uri.owner = owner;
+      setSearchedTokenURI(uri);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
@@ -79,6 +141,26 @@ const Home: NextPage = () => {
                 <span>Contract Address and token ID are required</span>
               )}
             </LeftForm>
+            <NFTContainer>
+              {searchedTokenURI && (
+                <img src={searchedTokenURI.image} alt="image"></img>
+              )}
+              <div className="metadata">
+                {searchedTokenURI && (
+                  <>
+                    <h1>{searchedTokenURI.name}</h1>
+                    <p className="owner">
+                      {' '}
+                      Owned by {trimAddress(searchedTokenURI.owner)}
+                    </p>
+                    <p className="description">
+                      {searchedTokenURI.description}
+                    </p>
+                    <BlackButton>Choose</BlackButton>
+                  </>
+                )}
+              </div>
+            </NFTContainer>
           </Left>
           <Right>
             <RightForm onSubmit={handleSubmit(onSubmit)}>
@@ -121,6 +203,37 @@ const Home: NextPage = () => {
   );
 };
 
+const NFTContainer = styled.div`
+  margin-top: 1rem;
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  img {
+    height: 350px;
+    width: 350px;
+  }
+  .metadata {
+    align-self: center;
+  }
+
+  h1 {
+    padding-top: 0.5rem;
+  }
+
+  p {
+    padding-left: 0.2rem;
+    padding-top: 0.2rem;
+  }
+
+  .owner {
+    opacity: 0.8;
+  }
+
+  .description {
+    padding-top: 0.5rem;
+  }
+`;
+
 const Button = styled.button`
   padding: 0.75rem;
   border-radius: 20px;
@@ -160,6 +273,22 @@ const LeftSearch = styled.div`
     :hover {
       background-color: ${({ theme }) => theme.colors.secondary};
     }
+  }
+`;
+
+const BlackButton = styled.button`
+  margin-top: 1rem;
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.background.primary};
+  padding: 0.7rem 2.25rem;
+  width: 100%;
+  border-radius: 5px;
+  font-size: ${({ theme }) => theme.typeScale.header6};
+  font-weight: 600;
+  cursor: pointer;
+
+  :hover {
+    background-color: ${({ theme }) => theme.colors.secondary};
   }
 `;
 
