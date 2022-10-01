@@ -5,6 +5,7 @@ import { BiChevronRight } from 'react-icons/bi';
 import { useContext, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { TronWebContext, TronWebFallbackContext } from '../pages/_app';
+import { trimAddress, wl } from '../misc';
 
 type TokenURI = {
   tokenId: string;
@@ -14,45 +15,18 @@ type TokenURI = {
   owner: string;
 };
 
-const trimAddress = (address: string) => {
-  return address.slice(0, 10) + '...' + address.slice(30, address.length);
-};
-
-const whitelist: { [key: string]: any } = {
-  TWi53fvZgTsW8tvAQmYVeThnBeyJqEfJhQ: {
-    name: 'BAYCTRON',
-    baseURI: 'https://tronapes.com/api/v1/nft/ape/',
-    endURI: '',
-    ipfsImage: false,
-  },
-  TLHjJLASw223bG6FNGjfzBJmeWeVMb7Li7: {
-    name: 'MoonCatz',
-    baseURI: '',
-    endURI: '',
-    ipfsImage: false,
-  },
-  TJjKSaj9UD9tQ27zvN6hpXiCwN2VsdNW7P: {
-    name: 'MAYCTRON',
-    baseURI: 'https://tronapes.com/api/v1/nft/mutant/',
-    endURI: '',
-    ipfsImage: false,
-  },
-  TQ4Z2CrPCJpEw8RfW1w6zSoBhhMtsnqdP9: {
-    name: 'TRONBULLCLUB',
-    baseURI:
-      'https://ipfs.io/ipfs/QmVEWNACYMp9DKMZWvYBXdQWVt9UjgFFtiLuyj1ibFgy5R/',
-    endURI: '.json',
-    ipfsImage: true,
-  },
-};
-
 const Home: NextPage = () => {
   const tronWeb = useContext(TronWebContext);
   const tronWebFallback = useContext(TronWebFallbackContext);
   const [currentStage, setCurrentStage] = useState('select');
-  const [searchedTokenURI, setSearchedTokenURI] = useState<TokenURI | null>(
-    null
-  );
+  const [chosenNFTs, setChosenNFTs] = useState<TokenURI[]>([]);
+  const [searchedTokenURI, setSearchedTokenURI] = useState<TokenURI>({
+    tokenId: '-1',
+    name: 'name',
+    image: 'image',
+    description: 'description',
+    owner: 'owner',
+  });
   const { register, handleSubmit, watch, formState } = useForm<any>();
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
@@ -60,14 +34,16 @@ const Home: NextPage = () => {
   };
 
   const onSearch: SubmitHandler<any> = async (data) => {
-    const collection = whitelist[data.contractAddress];
+    console.log(data);
+
+    const collection = wl[data.collection];
     if (!collection) {
       console.log("we don't support this collection yet!");
       return;
     }
 
     try {
-      const nftContract = await tronWeb.contract().at(data.contractAddress);
+      const nftContract = await tronWeb.contract().at(collection.address);
       const owner = await nftContract.ownerOf(data.tokenId).call();
       const metadataURI = collection.baseURI + data.tokenId + collection.endURI;
       const response = await fetch(metadataURI);
@@ -82,6 +58,18 @@ const Home: NextPage = () => {
     } catch (e) {
       console.log(e);
     }
+  };
+
+  const handleChooseNFT = () => {
+    if (chosenNFTs.includes(searchedTokenURI)) {
+      console.log('already chosen!');
+      return;
+    }
+    if (chosenNFTs.length > 6) {
+      console.log('max length is 6!');
+      return;
+    }
+    setChosenNFTs(chosenNFTs.concat([searchedTokenURI]));
   };
 
   return (
@@ -119,13 +107,15 @@ const Home: NextPage = () => {
             <LeftForm onSubmit={searchForm.handleSubmit(onSearch)}>
               <LeftSearch>
                 <div>
-                  <label>Contract address</label>
-                  <input
-                    placeholder="e.g TWi53fvZgTsW8tvAQmYVeThnBeyJqEfJhQ"
-                    {...searchForm.register('contractAddress', {
+                  <label>Collection</label>
+                  <select
+                    {...searchForm.register('collection', {
                       required: true,
                     })}
-                  />
+                  >
+                    <option value="bayctron">BAYCTRON</option>
+                    <option value="mayctron">MAYCTRON</option>
+                  </select>
                 </div>
                 <div>
                   <label>NFT Token ID</label>
@@ -142,11 +132,11 @@ const Home: NextPage = () => {
               )}
             </LeftForm>
             <NFTContainer>
-              {searchedTokenURI && (
+              {searchedTokenURI.tokenId !== '-1' && (
                 <img src={searchedTokenURI.image} alt="image"></img>
               )}
               <div className="metadata">
-                {searchedTokenURI && (
+                {searchedTokenURI.tokenId !== '-1' && (
                   <>
                     <h1>{searchedTokenURI.name}</h1>
                     <p className="owner">
@@ -156,7 +146,7 @@ const Home: NextPage = () => {
                     <p className="description">
                       {searchedTokenURI.description}
                     </p>
-                    <BlackButton>Choose</BlackButton>
+                    <BlackButton onClick={handleChooseNFT}>Choose</BlackButton>
                   </>
                 )}
               </div>
@@ -164,8 +154,20 @@ const Home: NextPage = () => {
           </Left>
           <Right>
             <RightForm onSubmit={handleSubmit(onSubmit)}>
-              <p className="header">Vault details</p>
-
+              <div className="vault-details">
+                <p className="header">Vault details</p>
+                <div className="nft-row">
+                  {chosenNFTs.map((nft) => {
+                    return (
+                      <img
+                        key={nft.tokenId + nft.name}
+                        src={nft.image}
+                        alt="image"
+                      ></img>
+                    );
+                  })}
+                </div>
+              </div>
               <div className="single">
                 <label>Vault Name:</label>
                 <input
@@ -261,6 +263,7 @@ const LeftSearch = styled.div`
       width: 100%;
     }
   }
+
   button {
     background-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.background.primary};
@@ -321,6 +324,15 @@ const LeftForm = styled.form`
     border: 2px solid ${({ theme }) => theme.background.senary};
   }
 
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 2px solid ${({ theme }) => theme.background.senary};
+  }
+
   .single {
     display: flex;
     flex-direction: column;
@@ -363,6 +375,21 @@ const RightForm = styled.form`
     font-size: 14px;
     font-weight: 500;
   }
+  .vault-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .nft-row {
+    margin-left: 0.25rem;
+    display: flex;
+    gap: 0.5rem;
+    img {
+      border-radius: 10px;
+      width: 50px;
+      height: 50px;
+    }
+  }
 `;
 
 const Right = styled.div`
@@ -394,7 +421,7 @@ const Content = styled.div`
   width: 80%;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 2rem;
+  gap: 3rem;
   margin-top: 3rem;
 `;
 
