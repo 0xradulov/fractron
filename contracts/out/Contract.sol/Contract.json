@@ -1,0 +1,56 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220cb7d2f1236bd2704493d272a717d815178a676901562cb72cc2d776111676c6164736f6c634300080a0033",
+    "sourceMap": "64:20:9:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080604052600080fdfea2646970667358221220cb7d2f1236bd2704493d272a717d815178a676901562cb72cc2d776111676c6164736f6c634300080a0033",
+    "sourceMap": "64:20:9:-:0;;;;;",
+    "linkReferences": {}
+  },
+  "ast": {
+    "absolutePath": "/Users/alexander/dev/fractional/contracts/src/Contract.sol",
+    "exportedSymbols": {
+      "Contract": [
+        24167
+      ]
+    },
+    "id": 24168,
+    "license": "UNLICENSED",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 24166,
+        "literals": [
+          "solidity",
+          "0.8",
+          ".10"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "39:23:9"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "Contract",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "id": 24167,
+        "linearizedBaseContracts": [
+          24167
+        ],
+        "name": "Contract",
+        "nameLocation": "73:8:9",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 24168,
+        "src": "64:20:9",
+        "usedErrors": []
+      }
+    ],
+    "src": "39:46:9"
+  }
+}
