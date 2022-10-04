@@ -18,7 +18,9 @@ type TokenURI = {
 const Home: NextPage = () => {
   const tronWeb = useContext(TronWebContext);
   const tronWebFallback = useContext(TronWebFallbackContext);
-  const [currentStage, setCurrentStage] = useState('select');
+  const [currentStage, setCurrentStage] = useState<'select' | 'fractionalize'>(
+    'select'
+  );
   const [chosenNFTs, setChosenNFTs] = useState<TokenURI[]>([]);
   const [searchedTokenURI, setSearchedTokenURI] = useState<TokenURI>({
     tokenId: '-1',
@@ -31,6 +33,7 @@ const Home: NextPage = () => {
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
     console.log(data);
+    // do the actual fractionalization
   };
 
   const onSearch: SubmitHandler<any> = async (data) => {
@@ -72,6 +75,16 @@ const Home: NextPage = () => {
     setChosenNFTs(chosenNFTs.concat([searchedTokenURI]));
   };
 
+  const deleteFromChosenNFTs = (name: string, tokenId: string) => {
+    setChosenNFTs(
+      chosenNFTs.filter((nft) => nft.name != name && nft.tokenId != tokenId)
+    );
+  };
+
+  const handleContinue = () => {
+    setCurrentStage('fractionalize');
+  };
+
   return (
     <Outer>
       <div className="wrapper">
@@ -80,125 +93,154 @@ const Home: NextPage = () => {
             <FaLongArrowAltLeft />
           </div>
           <div className="state">
-            <Stage isActive={currentStage == 'select'}>
-              <p>Select your NFT</p>
+            <Stage
+              className="select"
+              isActive={currentStage == 'select'}
+              onClick={() => setCurrentStage('select')}
+            >
+              <p>Select your NFTs</p>
             </Stage>
             <BiChevronRight />
             <Stage isActive={currentStage == 'fractionalize'}>
-              <p>Fractionalize NFT</p>
+              <p>Fractionalize NFTs</p>
             </Stage>
           </div>
           <div className="navigate">
             <FaLongArrowAltRight />
           </div>
         </ProgressBar>
+        <ChosenBar>
+          <div className="nft-row">
+            {currentStage === 'select' &&
+              chosenNFTs.map((nft) => {
+                return (
+                  <img
+                    onClick={() => deleteFromChosenNFTs(nft.name, nft.tokenId)}
+                    key={nft.tokenId + nft.name}
+                    src={nft.image}
+                    alt="image"
+                  ></img>
+                );
+              })}
+          </div>
+          {chosenNFTs.length > 0 && currentStage === 'select' && (
+            <BlackButton onClick={handleContinue}>Continue</BlackButton>
+          )}
+        </ChosenBar>
         <Content>
-          <Left>
-            <h1>
-              Select your NFT to <span>Fractionalize</span>
-            </h1>
-            <p>
-              Choose the NFT(s) to send to a new vault, select your desired
-              fraction type, set your vault&apos;s details, then continue to
-              fractionalize. Once complete, all fractions will appear in your
-              wallet. Be aware, you cannot add to the NFTs in a vault once
-              created. Read our guides for more information.
-            </p>
-            <LeftForm onSubmit={searchForm.handleSubmit(onSearch)}>
-              <LeftSearch>
-                <div>
-                  <label>Collection</label>
-                  <select
-                    {...searchForm.register('collection', {
-                      required: true,
-                    })}
-                  >
-                    <option value="bayctron">BAYCTRON</option>
-                    <option value="mayctron">MAYCTRON</option>
-                  </select>
-                </div>
-                <div>
-                  <label>NFT Token ID</label>
-                  <input
-                    placeholder="e.g 3546"
-                    {...searchForm.register('tokenId', { required: true })}
-                  />
-                </div>
-                <button type="submit">Search</button>
-              </LeftSearch>
-              {(searchForm.formState.errors.contractAddress ||
-                searchForm.formState.errors.tokenId) && (
-                <span>Contract Address and token ID are required</span>
-              )}
-            </LeftForm>
-            <NFTContainer>
-              {searchedTokenURI.tokenId !== '-1' && (
-                <img src={searchedTokenURI.image} alt="image"></img>
-              )}
-              <div className="metadata">
-                {searchedTokenURI.tokenId !== '-1' && (
-                  <>
-                    <h1>{searchedTokenURI.name}</h1>
-                    <p className="owner">
-                      {' '}
-                      Owned by {trimAddress(searchedTokenURI.owner)}
-                    </p>
-                    <p className="description">
-                      {searchedTokenURI.description}
-                    </p>
-                    <BlackButton onClick={handleChooseNFT}>Choose</BlackButton>
-                  </>
+          {currentStage === 'select' && (
+            <Left>
+              <h1>
+                Select your NFTs to <span>Fractionalize</span>
+              </h1>
+              <p>
+                Choose the NFT(s) to send to a new vault, select your desired
+                fraction type, set your vault&apos;s details, then continue to
+                fractionalize. Once complete, all fractions will appear in your
+                wallet. Be aware, you cannot add to the NFTs in a vault once
+                created. Read our guides for more information.
+              </p>
+              <LeftForm onSubmit={searchForm.handleSubmit(onSearch)}>
+                <LeftSearch>
+                  <div>
+                    <label>Collection</label>
+                    <select
+                      {...searchForm.register('collection', {
+                        required: true,
+                      })}
+                    >
+                      <option value="bayctron">BAYCTRON</option>
+                      <option value="mayctron">MAYCTRON</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>NFT Token ID</label>
+                    <input
+                      placeholder="e.g 3546"
+                      {...searchForm.register('tokenId', { required: true })}
+                    />
+                  </div>
+                  <button type="submit">Search</button>
+                </LeftSearch>
+                {(searchForm.formState.errors.contractAddress ||
+                  searchForm.formState.errors.tokenId) && (
+                  <span>Contract Address and token ID are required</span>
                 )}
-              </div>
-            </NFTContainer>
-          </Left>
-          <Right>
-            <RightForm onSubmit={handleSubmit(onSubmit)}>
-              <div className="vault-details">
-                <p className="header">Vault details</p>
-                <div className="nft-row">
-                  {chosenNFTs.map((nft) => {
-                    return (
-                      <img
-                        key={nft.tokenId + nft.name}
-                        src={nft.image}
-                        alt="image"
-                      ></img>
-                    );
-                  })}
+              </LeftForm>
+              <NFTContainer>
+                {searchedTokenURI.tokenId !== '-1' && (
+                  <img src={searchedTokenURI.image} alt="image"></img>
+                )}
+                <div className="metadata">
+                  {searchedTokenURI.tokenId !== '-1' && (
+                    <>
+                      <h1>{searchedTokenURI.name}</h1>
+                      <p className="owner">
+                        {' '}
+                        Owned by {trimAddress(searchedTokenURI.owner)}
+                      </p>
+                      <p className="description">
+                        {searchedTokenURI.description}
+                      </p>
+                      <BlackButton onClick={handleChooseNFT}>
+                        Choose
+                      </BlackButton>
+                    </>
+                  )}
                 </div>
-              </div>
-              <div className="single">
-                <label>Vault Name:</label>
-                <input
-                  className="name"
-                  placeholder="e.g BAYCTRONV"
-                  {...register('name', { required: true })}
-                />
-              </div>
-              <Double>
-                <div>
-                  <label>Token supply:</label>
+              </NFTContainer>
+            </Left>
+          )}
+          {currentStage === 'fractionalize' && (
+            <Right>
+              <RightForm onSubmit={handleSubmit(onSubmit)}>
+                <div className="vault-details">
+                  <p className="header">Vault details</p>
+                  <div className="nft-row">
+                    {chosenNFTs.map((nft) => {
+                      return (
+                        <img
+                          key={nft.tokenId + nft.name}
+                          src={nft.image}
+                          alt="image"
+                        ></img>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="single vault-input">
+                  <label>Vault Name:</label>
                   <input
-                    placeholder="e.g 10000"
-                    {...register('supply', { required: true })}
+                    className="name"
+                    placeholder="e.g BAYCTRONV"
+                    {...register('name', { required: true })}
                   />
+                  {formState.errors.name && <span>Vault name is required</span>}
                 </div>
+                <Double>
+                  <div className="vault-input">
+                    <label>Token supply:</label>
+                    <input
+                      type="number"
+                      placeholder="e.g 10000"
+                      {...register('supply', { required: true })}
+                    />
+                    {formState.errors.supply && <span>Supply is required</span>}
+                  </div>
 
-                <div>
-                  <label>Token symbol:</label>
-                  <input
-                    placeholder="e.g BAYT"
-                    {...register('symbol', { required: true })}
-                  />
-                </div>
-              </Double>
-              {formState.errors.resolutionSource && (
-                <span>This field is required</span>
-              )}
-              <Button type="submit">Continue</Button>
-            </RightForm>
-          </Right>
+                  <div className="vault-input">
+                    <label>Token symbol:</label>
+                    <input
+                      placeholder="e.g BAYT"
+                      {...register('symbol', { required: true })}
+                    />
+                    {formState.errors.symbol && <span>Symbol is required</span>}
+                  </div>
+                </Double>
+                <Button type="submit">Fractionalize</Button>
+              </RightForm>
+            </Right>
+          )}
         </Content>
       </div>
     </Outer>
@@ -370,6 +412,13 @@ const RightForm = styled.form`
     gap: 0.5rem;
   }
 
+  .vault-input {
+    span {
+      color: ${({ theme }) => theme.colors.secondary};
+      font-size: ${({ theme }) => theme.typeScale.helperText};
+    }
+  }
+
   label {
     opacity: 0.8;
     font-size: 14px;
@@ -393,6 +442,7 @@ const RightForm = styled.form`
 `;
 
 const Right = styled.div`
+  width: 60%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -418,11 +468,15 @@ const Left = styled.div`
 `;
 
 const Content = styled.div`
-  width: 80%;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* display: grid; */
+  /* grid-template-columns: 2fr 1fr; */
   gap: 3rem;
-  margin-top: 3rem;
+  /* margin-top: 3rem; */
 `;
 
 const Stage = styled.div<{ isActive: boolean }>`
@@ -433,6 +487,42 @@ const Stage = styled.div<{ isActive: boolean }>`
   p {
     font-weight: 600;
     opacity: ${({ theme, isActive }) => (isActive ? 1 : 0.5)};
+  }
+  &.select {
+    cursor: pointer;
+    :hover {
+      border-bottom: 2px solid ${({ theme }) => theme.colors.secondary};
+    }
+    p {
+      :hover {
+        opacity: 1;
+      }
+    }
+  }
+`;
+
+const ChosenBar = styled.div`
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.75rem;
+
+  .nft-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    img {
+      cursor: pointer;
+      border-radius: 10px;
+      width: 80px;
+      height: 80px;
+    }
+  }
+
+  button {
+    width: 200px;
   }
 `;
 

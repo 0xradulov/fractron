@@ -1,6 +1,20 @@
 import type { NextPage } from 'next';
 import styled from 'styled-components';
 
+const indexToImageName = (i: number) => {
+  // assumes that i < 1000
+  let name = 'image_part_';
+  if (i < 10) {
+    name += `00${i}.jpg`;
+  } else if (i < 100) {
+    name += `0${i}.jpg`;
+  } else {
+    name += `${i}.jpg`;
+  }
+
+  return name;
+};
+
 const Home: NextPage = () => {
   return (
     <Outer>
@@ -19,8 +33,13 @@ const Home: NextPage = () => {
             <Button>Explore fractions</Button>
           </Left>
           <Right>
-            {new Array(81).fill(0).map((i) => {
-              return <div key={Math.random()}></div>;
+            {new Array(100).fill(0).map((_, i) => {
+              const name = indexToImageName(i + 1);
+              console.log(name);
+              return (
+                <img src={`./doodle100/${name}`} key={name} alt="image"></img>
+              );
+              // return <div key={Math.random()}></div>;
             })}
           </Right>
         </First>
@@ -58,7 +77,7 @@ const Button = styled.button`
 
 const Outer = styled.div`
   min-height: calc(100vh - 62px);
-  margin-top: 5rem;
+  margin-top: 4rem;
   .wrapper {
     display: flex;
     flex-direction: column;
@@ -155,22 +174,22 @@ const Left = styled.div`
 
 const Right = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  gap: 0.35rem;
-  div {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 0.5rem;
+  img {
     height: 50px;
     width: 50px;
     background: ${({ theme }) => theme.colors.primary};
   }
 
   @media screen and (max-width: 1200px) {
-    div {
+    img {
       height: 40px;
       width: 40px;
     }
   }
   @media screen and (max-width: 1040px) {
-    div {
+    img {
       height: 30px;
       width: 30px;
     }
