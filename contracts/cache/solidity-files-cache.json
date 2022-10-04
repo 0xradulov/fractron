@@ -406,8 +406,8 @@
       }
     },
     "/Users/alexander/dev/fractional/contracts/src/Fractron.sol": {
-      "lastModificationDate": 1664902818271,
-      "contentHash": "256ba05503ff7b33ddc3e602d05a23c4",
+      "lastModificationDate": 1664903688432,
+      "contentHash": "389275df990cea70101c23e11332881c",
       "sourceName": "src/Fractron.sol",
       "solcConfig": {
         "settings": {
@@ -531,8 +531,8 @@
       }
     },
     "/Users/alexander/dev/fractional/contracts/src/test/Fractron.t.sol": {
-      "lastModificationDate": 1664903204869,
-      "contentHash": "507ad432f057fdab0330b46fe42b86cd",
+      "lastModificationDate": 1664903851160,
+      "contentHash": "982fd382d499a43764a5508bde0c494d",
       "sourceName": "src/test/Fractron.t.sol",
       "solcConfig": {
         "settings": {

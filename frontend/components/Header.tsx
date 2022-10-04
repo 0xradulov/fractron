@@ -27,8 +27,8 @@ export default function Header() {
   const page =
     router.asPath === '/explore'
       ? 'explore'
-      : router.asPath === '/collections'
-      ? 'collections'
+      : router.asPath === '/vaults'
+      ? 'vaults'
       : '';
 
   return (
@@ -42,8 +42,8 @@ export default function Header() {
         <Link href="/explore">
           <a className="choice">Explore</a>
         </Link>
-        <Link href="/collections">
-          <a className="choice">Collections</a>
+        <Link href="/vaults">
+          <a className="choice">Vaults</a>
         </Link>
       </LogoContainer>
       <ButtonContainer>

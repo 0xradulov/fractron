@@ -35,7 +35,9 @@ contract FractronTest is DSTest {
     Fractron internal fractron;
 
     ERC721[] internal nftContracts;
+    ERC721[] internal nftContracts2;
     uint256[] internal nftIds;
+    uint256[] internal nftIds2;
 
     event VaultCreated(Fractron.Vault vault);
     event VaultDestroyed(Fractron.Vault vault);
@@ -63,12 +65,13 @@ contract FractronTest is DSTest {
         nftContracts.push(collection1);
         nftContracts.push(collection1);
         nftContracts.push(collection2);
-        nftContracts.push(collection2);
 
         nftIds.push(collection1_id1);
         nftIds.push(collection1_id2);
         nftIds.push(collection2_id1);
-        nftIds.push(collection2_id2);
+
+        nftContracts2.push(collection2);
+        nftIds2.push(collection2_id2);
     }
 
     function testCanSplitToken() public {
@@ -132,6 +135,28 @@ contract FractronTest is DSTest {
         vault = fractron.getVault(vaultId);
         for (uint256 i = 0; i < vault.nftContracts.length; i++) {
             assertEq(vault.tokenIds[0], 0);
+        }
+    }
+
+    function testCanGetAllVaults() public {
+        fractron.split(
+            nftContracts,
+            nftIds,
+            100 ether,
+            "Fractionalised NFT",
+            "FRAC"
+        );
+        fractron.split(
+            nftContracts2,
+            nftIds2,
+            100 ether,
+            "Fractionalised NFT",
+            "FRAC"
+        );
+
+        Fractron.Vault[] memory vaults = fractron.getAllVaults();
+        for (uint256 i = 0; i < vaults.length; i++) {
+            assertTrue(address(vaults[i].tokenContract) != address(0));
         }
     }
 }

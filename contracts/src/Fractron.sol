@@ -46,7 +46,7 @@ contract Fractron {
     event VaultCreated(Vault vault);
     event VaultDestroyed(Vault vault);
 
-    uint256 internal currentVaultId = 1;
+    uint256 internal currentVaultId = 0;
     mapping(uint256 => Vault) public vaultById;
 
     function split(
@@ -100,6 +100,14 @@ contract Fractron {
 
     function getVault(uint256 vaultId) public view returns (Vault memory) {
         return vaultById[vaultId];
+    }
+
+    function getAllVaults() public view returns (Vault[] memory) {
+        Vault[] memory vaults = new Vault[](currentVaultId);
+        for (uint256 i = 0; i < currentVaultId; i++) {
+            vaults[i] = vaultById[i];
+        }
+        return vaults;
     }
 
     /// @dev This function ensures this contract can receive ERC721 tokens
