@@ -39,11 +39,8 @@ export default function Header() {
             frac<span>tron</span>
           </a>
         </Link>
-        <Link href="/explore">
-          <a className="choice">Explore</a>
-        </Link>
         <Link href="/vaults">
-          <a className="choice">Vaults</a>
+          <Choice isActive={page === 'vaults'}>Vaults</Choice>
         </Link>
       </LogoContainer>
       <ButtonContainer>
@@ -98,14 +95,17 @@ const LogoContainer = styled.div`
   }
 
   .choice {
-    padding-top: 0.5rem;
-    font-weight: 600;
-    opacity: 0.6;
+  }
+`;
 
-    :hover {
-      cursor: pointer;
-      opacity: 1;
-    }
+const Choice = styled.a<{ isActive: boolean }>`
+  padding-top: 0.5rem;
+  font-weight: 600;
+  opacity: ${({ isActive }) => (isActive ? 1 : 0.6)};
+
+  :hover {
+    cursor: pointer;
+    opacity: 1;
   }
 `;
 

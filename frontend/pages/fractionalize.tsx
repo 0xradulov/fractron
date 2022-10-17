@@ -32,6 +32,7 @@ const Home: NextPage = () => {
   const { register, handleSubmit, watch, formState } = useForm<any>();
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
+    console.log(chosenNFTs);
     console.log(data);
     // do the actual fractionalization
   };

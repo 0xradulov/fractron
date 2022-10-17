@@ -9,3 +9,15 @@ some tron collection
 
 
 TODO
+
+
+
+sd:
+
+- choose collection
+- type prompt and generate images
+wait for image
+- choose image be clicking on it
+- mint nft
+wait for mint
+- provide link to apenft

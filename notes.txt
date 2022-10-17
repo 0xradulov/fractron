@@ -1,0 +1,18 @@
+stable:
+
+
+Pages:
+
+homepage
+gallery
+create NFT page
+create collection page
+
+
+homepage
+ - front stuff
+ - box showing the process?
+
+create page
+ - choose collection
+ - give prompt
