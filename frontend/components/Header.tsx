@@ -50,7 +50,11 @@ export default function Header() {
           </a>
         </Link>
         {connected ? (
-          <BiUserCircle />
+          <Link href="/profile">
+            <a>
+              <BiUserCircle />
+            </a>
+          </Link>
         ) : (
           <PrimaryButton
             onClick={

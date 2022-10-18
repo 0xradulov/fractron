@@ -17,7 +17,12 @@ const VaultsPage: NextPage = () => {
             return (
               <Link href={`/vaults/${i}`} key={i}>
                 <Vault>
-                  <div className="top"></div>
+                  <div className="top">
+                    <img
+                      src="https://gateway.ipfs.io/ipfs/QmVWhjRUy2NxgNGpdjaWLbMZRhXZGwwqoupjbi9KNBjqEY"
+                      alt=""
+                    ></img>
+                  </div>
                   <div className="bottom">
                     <div className="title">
                       <p>BAYCTRON Vault </p>
@@ -48,19 +53,25 @@ const Vault = styled.a`
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  background-color: white;
+  border: 1px solid ${({ theme }) => theme.background.quaternary};
+  border-radius: 1rem;
   .top {
-    height: 150px;
-    width: 350px;
-    border-radius: 1.5rem 1.5rem 0 0;
-    background-color: blue;
+    height: 300px;
+    width: 300px;
+    border-radius: 1rem 1rem 0 0;
+    /* background-color: blue; */
+    img {
+      height: 100%;
+      width: 350px;
+    }
   }
   .bottom {
     padding: 1rem;
     /* height: 100px; */
     width: 350px;
-    border-radius: 0 0 1.5rem 1.5rem;
+    border-radius: 0 0 1rem 1rem;
     background-color: white;
-    border: 2px solid ${({ theme }) => theme.background.quaternary};
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -100,15 +111,21 @@ const Vault = styled.a`
   }
 `;
 const Vaults = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  /* display: grid; */
+  /* grid-template-columns: 1fr 1fr 1fr 1fr; */
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
 
-  gap: 1.25rem;
+  gap: 1.5rem;
+
+  @media screen and (max-width: 1700px) {
+    /* grid-template-columns: 1fr 1fr 1fr; */
+  }
 `;
 
 const Inner = styled.div`
-  width: 80%;
+  width: 95%;
   display: flex;
   flex-direction: column;
   justify-content: center;

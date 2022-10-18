@@ -1,4 +1,5 @@
 import type { NextPage } from 'next';
+import Link from 'next/link';
 import styled from 'styled-components';
 
 const indexToImageName = (i: number) => {
@@ -30,7 +31,11 @@ const Home: NextPage = () => {
               Fractional reduces entry costs, increases access, and enables new
               communities.
             </p>
-            <Button>Explore fractions</Button>
+            <Link href="/vaults">
+              <a>
+                <Button>Explore Vaults</Button>
+              </a>
+            </Link>
           </Left>
           <Right>
             {new Array(100).fill(0).map((_, i) => {

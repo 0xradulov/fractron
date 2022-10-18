@@ -10,14 +10,12 @@ some tron collection
 
 TODO
 
+1. design and implement:
+  - vault page
+  - profile page
+2. 
 
 
-sd:
-
-- choose collection
-- type prompt and generate images
-wait for image
-- choose image be clicking on it
-- mint nft
-wait for mint
-- provide link to apenft
+VAULTS PAGE
+- get vaults from contract
+- have vault image hardcoded

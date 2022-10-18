@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.0;
 
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {ERC721} from "solmate/tokens/ERC721.sol";
@@ -27,9 +27,9 @@ contract NFTShare is ERC20 {
 
 contract Fractron {
     /// @notice Thrown when trying to rejoin a token from a vault that doesn't exist
-    error VaultNotFound();
+    // error VaultNotFound();
     /// @notice Thrown when trying to create vault that can't exist
-    error InvalidVault();
+    // error InvalidVault();
 
     /// @dev Parameters for vaults
     /// @param nftContracts The ERC721 contracts for the fractionalized tokens
@@ -56,7 +56,8 @@ contract Fractron {
         string memory name,
         string memory symbol
     ) public payable returns (uint256) {
-        if (nftContracts.length != tokenIds.length) revert InvalidVault();
+        // if (nftContracts.length != tokenIds.length) revert InvalidVault();
+        require(nftContracts.length == tokenIds.length, "invalid vault");
         NFTShare tokenContract = new NFTShare(name, symbol, supply, msg.sender);
 
         Vault memory vault = Vault({
@@ -84,7 +85,8 @@ contract Fractron {
     function join(uint256 vaultId) public payable {
         Vault memory vault = vaultById[vaultId];
 
-        if (address(vault.tokenContract) == address(0)) revert VaultNotFound();
+        // if (address(vault.tokenContract) == address(0)) revert VaultNotFound();
+        require(address(vault.tokenContract) != address(0), "vault not found");
 
         delete vaultById[vaultId];
 
