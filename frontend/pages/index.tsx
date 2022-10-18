@@ -58,7 +58,57 @@ const Home: NextPage = () => {
             Fractionalization is also a unique way to unlock NFT utility and
             community building around popular NFTs.
           </p>
-          <div className="big-nft"></div>
+          <BigNFT>
+            <div className="inner">
+              {new Array(100).fill(0).map((_, i) => {
+                const name = indexToImageName(i + 1);
+                console.log(name);
+                return (
+                  <img src={`./doodle100/${name}`} key={name} alt="image"></img>
+                );
+              })}
+            </div>
+            <div className="inner">
+              {new Array(100).fill(0).map((_, i) => {
+                const name = indexToImageName(i + 1);
+                console.log(name);
+                return (
+                  <img src={`./clonex100/${name}`} key={name} alt="image"></img>
+                );
+              })}
+            </div>
+            <div className="inner">
+              {new Array(100).fill(0).map((_, i) => {
+                const name = indexToImageName(i + 1);
+                console.log(name);
+                return (
+                  <img
+                    src={`./tronbies100/${name}`}
+                    key={name}
+                    alt="image"
+                  ></img>
+                );
+              })}
+            </div>
+            <div className="inner">
+              {new Array(100).fill(0).map((_, i) => {
+                const name = indexToImageName(i + 1);
+                console.log(name);
+                return (
+                  <img
+                    src={`./coolcat100/${name}`}
+                    key={name}
+                    alt="image"
+                  ></img>
+                );
+              })}
+            </div>
+          </BigNFT>
+          <Link href="/vaults">
+            <a>
+              <Button>Popular Vaults</Button>
+            </a>
+          </Link>
         </Second>
       </div>
     </Outer>
@@ -177,6 +227,34 @@ const Left = styled.div`
   }
 `;
 
+const BigNFT = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 1rem;
+  .inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 0.2rem;
+    img {
+      height: 25px;
+      width: 25px;
+      background: ${({ theme }) => theme.colors.primary};
+    }
+
+    @media screen and (max-width: 1200px) {
+      img {
+        height: 40px;
+        width: 40px;
+      }
+    }
+    @media screen and (max-width: 1040px) {
+      img {
+        height: 30px;
+        width: 30px;
+      }
+    }
+  }
+`;
 const Right = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;

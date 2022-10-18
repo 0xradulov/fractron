@@ -27,7 +27,7 @@ export default function Header() {
   const page =
     router.asPath === '/explore'
       ? 'explore'
-      : router.asPath === '/vaults'
+      : router.asPath.slice(0, 7) === '/vaults'
       ? 'vaults'
       : '';
 
