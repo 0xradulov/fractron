@@ -4,6 +4,10 @@ import { BsPatchCheckFill } from 'react-icons/bs';
 import Link from 'next/link';
 
 const Profile: NextPage = () => {
+  // get logged in assets
+  // query contract for fractions
+  // add creator to vaults?
+
   return (
     <Outer>
       <Inner>

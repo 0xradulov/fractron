@@ -4,9 +4,37 @@ import { BsPatchCheckFill } from 'react-icons/bs';
 import { BiLinkExternal } from 'react-icons/bi';
 import Link from 'next/link';
 
+export async function getStaticPaths() {
+  const paths = [];
+  for (let i = 0; i < 10; i++) {
+    paths.push({ params: { id: i.toString() } });
+  }
+  return {
+    paths,
+    fallback: false, // can also be true or 'blocking'
+  };
+}
+
+export async function getStaticProps({ params }: any) {
+  console.log(params.id);
+  // get vault
+  let vault = {
+    nftContracts: [],
+    tokenIds: [],
+    tokenSupply: 10000,
+    tokenContract: '0x0000000000000000000000000000000000000000',
+  };
+  // get nft images
+  // vault.images = blablabla
+
+  return {
+    props: {}, // will be passed to the page component as props
+  };
+}
+
 export default function Vault() {
   const { query } = useRouter();
-  console.log(query.id);
+  // console.log(query.id);
 
   return (
     <Container>
@@ -125,8 +153,8 @@ const Upper = styled.div`
   /* grid-template-columns: 1fr 1fr; */
   .left {
     img {
-      height: 500px;
-      width: 500px;
+      height: 400px;
+      width: 400px;
     }
   }
   .right {

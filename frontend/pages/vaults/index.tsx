@@ -3,7 +3,20 @@ import styled from 'styled-components';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import Link from 'next/link';
 
-const VaultsPage: NextPage = () => {
+export async function getStaticProps(context: any) {
+  // call getAllVaults
+  // nftcontracts, tokenids, tokensupply, erc20 contract
+  const vaults = [[[], [], 1000, 0xabc]];
+  // get header image for every collection here
+
+  return {
+    props: { vaults }, // will be passed to the page component as props
+  };
+}
+
+const VaultsPage: NextPage = ({ vaults }: any) => {
+  console.log(vaults);
+
   return (
     <Outer>
       <Inner>
