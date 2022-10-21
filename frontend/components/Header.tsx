@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { BiUserCircle } from 'react-icons/bi';
 import { useContext } from 'react';
 import { ConnectedContext } from '../pages/_app';
-import { PrimaryButton, SecondaryButton } from './Buttons';
+import { SecondaryButton } from './Buttons';
 
 export default function Header() {
   const { connected, setConnected } = useContext(ConnectedContext);
@@ -68,6 +68,22 @@ export default function Header() {
     </Container>
   );
 }
+
+const PrimaryButton = styled.button`
+  background-color: ${({ theme }) => theme.colors.secondary};
+  color: ${({ theme }) => theme.background.primary};
+  padding: 0.85rem 1.75rem;
+  border-radius: 30px;
+  font-size: ${({ theme }) => theme.typeScale.header6};
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0.9;
+
+  :hover {
+    opacity: 1;
+    background-color: ${({ theme }) => theme.colors.secondary};
+  }
+`;
 
 const Container = styled.div`
   position: sticky;

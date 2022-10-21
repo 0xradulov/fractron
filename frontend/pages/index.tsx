@@ -118,7 +118,7 @@ const Home: NextPage = () => {
 const Button = styled.button`
   width: 200px;
   padding: 1rem;
-  border-radius: 20px;
+  border-radius: 30px;
   background-color: white;
   border: 3px solid ${({ theme }) => theme.colors.secondary};
   font-size: ${({ theme }) => theme.typeScale.header6};

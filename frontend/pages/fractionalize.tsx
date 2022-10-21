@@ -6,6 +6,9 @@ import { useContext, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { TronWebContext, TronWebFallbackContext } from '../pages/_app';
 import { trimAddress, wl } from '../misc';
+import { BsPatchCheckFill } from 'react-icons/bs';
+import { BiLinkExternal } from 'react-icons/bi';
+import Link from 'next/link';
 
 type TokenURI = {
   tokenId: string;
@@ -18,6 +21,7 @@ type TokenURI = {
 const Home: NextPage = () => {
   const tronWeb = useContext(TronWebContext);
   const tronWebFallback = useContext(TronWebFallbackContext);
+  const [isFractionalized, setIsFractionalized] = useState(false);
   const [currentStage, setCurrentStage] = useState<'select' | 'fractionalize'>(
     'select'
   );
@@ -29,12 +33,17 @@ const Home: NextPage = () => {
     description: 'description',
     owner: 'owner',
   });
+  const [searchedCollection, setSearchedCollection] = useState(wl['bayctron']);
   const { register, handleSubmit, watch, formState } = useForm<any>();
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
     console.log(chosenNFTs);
     console.log(data);
+    setIsFractionalized(!isFractionalized);
     // do the actual fractionalization
+    // await tronWeb.contract().at()
+
+    // show address, name, ticker and supply
   };
 
   const onSearch: SubmitHandler<any> = async (data) => {
@@ -45,12 +54,19 @@ const Home: NextPage = () => {
       console.log("we don't support this collection yet!");
       return;
     }
+    setSearchedCollection(collection);
 
     try {
+      console.log(collection.address);
       const nftContract = await tronWeb.contract().at(collection.address);
+      console.log(nftContract);
+
       const owner = await nftContract.ownerOf(data.tokenId).call();
+      console.log(owner);
       const metadataURI = collection.baseURI + data.tokenId + collection.endURI;
+      console.log(metadataURI);
       const response = await fetch(metadataURI);
+      console.log(response);
       const uri = await response.json();
       console.log(uri);
       if (collection.ipfsImage) {
@@ -64,7 +80,7 @@ const Home: NextPage = () => {
     }
   };
 
-  const handleChooseNFT = () => {
+  const handleChooseNFT = async () => {
     if (chosenNFTs.includes(searchedTokenURI)) {
       console.log('already chosen!');
       return;
@@ -73,6 +89,13 @@ const Home: NextPage = () => {
       console.log('max length is 6!');
       return;
     }
+    // check if logged in user is the owner...
+    try {
+      // if (searchedTokenURI.owner === tronWeb.address.
+      // compare the addresses below
+      console.log(searchedTokenURI.owner);
+      console.log(tronWeb.defaultAddress.hex);
+    } catch (e) {}
     setChosenNFTs(chosenNFTs.concat([searchedTokenURI]));
   };
 
@@ -192,7 +215,7 @@ const Home: NextPage = () => {
               </NFTContainer>
             </Left>
           )}
-          {currentStage === 'fractionalize' && (
+          {currentStage === 'fractionalize' && !isFractionalized && (
             <Right>
               <RightForm onSubmit={handleSubmit(onSubmit)}>
                 <div className="vault-details">
@@ -239,6 +262,75 @@ const Home: NextPage = () => {
                   </div>
                 </Double>
                 <Button type="submit">Fractionalize</Button>
+              </RightForm>
+            </Right>
+          )}
+          {currentStage === 'fractionalize' && isFractionalized && (
+            <Right>
+              <RightForm onSubmit={handleSubmit(onSubmit)}>
+                <div className="vault-details">
+                  <p className="header">Vault details</p>
+                  <div className="nft-row">
+                    {chosenNFTs.map((nft) => {
+                      return (
+                        <img
+                          key={nft.tokenId + nft.name}
+                          src={nft.image}
+                          alt="image"
+                        ></img>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="single vault-input">
+                  <label>Vault Address:</label>
+
+                  <a
+                    href="https://tronscan.org"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span>TFYFBn376Gp3kHqgTygCvRLGnGsY6D3e2D</span>{' '}
+                    <BiLinkExternal />
+                  </a>
+                </div>
+                <div className="single vault-input">
+                  <label>Vault Name:</label>
+                  <p>TBC Vault</p>
+                </div>
+                <Double>
+                  <div className="vault-input">
+                    <label>Token supply:</label>
+                    <p>10000</p>
+                  </div>
+
+                  <div className="vault-input">
+                    <label>Token symbol:</label>
+                    <p>TBC</p>
+                  </div>
+                </Double>
+                <Button2
+                  type="button"
+                  onClick={() => setIsFractionalized(false)}
+                >
+                  <p>Fractionalized</p>
+                  <BsPatchCheckFill />
+                </Button2>
+                <a
+                  className="sunswap"
+                  href="https://tronscan.org"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <div>
+                    <img
+                      src="https://assets.coingecko.com/coins/images/12424/small/RSFOmQ.png?1624024337"
+                      alt=""
+                    ></img>
+                    <p>Trade fractions on Sunswap</p>
+                  </div>
+                  <BiLinkExternal />
+                </a>
               </RightForm>
             </Right>
           )}
@@ -290,6 +382,33 @@ const Button = styled.button`
     cursor: pointer;
     color: white;
     background-color: ${({ theme }) => theme.colors.secondary};
+  }
+  &.fractionalized {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    background: transparent;
+    svg {
+      color: ${({ theme }) => theme.colors.secondary};
+    }
+  }
+`;
+
+const Button2 = styled.button`
+  font-size: ${({ theme }) => theme.typeScale.header6};
+  font-weight: 600;
+  padding: 0.75rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  background: transparent;
+  svg {
+    color: ${({ theme }) => theme.colors.secondary};
   }
 `;
 
@@ -418,6 +537,26 @@ const RightForm = styled.form`
       color: ${({ theme }) => theme.colors.secondary};
       font-size: ${({ theme }) => theme.typeScale.helperText};
     }
+    p {
+      font-weight: 700;
+      font-size: ${({ theme }) => theme.typeScale.header6};
+    }
+    a {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      span {
+        font-weight: 700;
+        font-size: ${({ theme }) => theme.typeScale.header6};
+        color: black;
+      }
+      :hover {
+        color: ${({ theme }) => theme.colors.secondary};
+        span {
+          color: ${({ theme }) => theme.colors.secondary};
+        }
+      }
+    }
   }
 
   label {
@@ -440,10 +579,35 @@ const RightForm = styled.form`
       height: 50px;
     }
   }
+  .sunswap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+    :hover {
+      background-color: ${({ theme }) => theme.background.secondary};
+    }
+    p {
+      font-size: 19px;
+    }
+    img {
+      height: 25px;
+      width: 25px;
+    }
+    div {
+      display: flex;
+      gap: 1rem;
+      font-weight: 500;
+    }
+    border-radius: 0.75rem;
+    border: 1px solid ${({ theme }) => theme.background.tertiary};
+    padding: 1.25rem 1.5rem;
+  }
 `;
 
 const Right = styled.div`
-  width: 60%;
+  /* width: 60%; */
   display: flex;
   flex-direction: column;
   gap: 1rem;
