@@ -2,9 +2,13 @@ import type { NextPage } from 'next';
 import styled from 'styled-components';
 import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
 import { BiChevronRight } from 'react-icons/bi';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { TronWebContext, TronWebFallbackContext } from '../pages/_app';
+import {
+  TestnetContext,
+  TronWebContext,
+  TronWebFallbackContext,
+} from '../pages/_app';
 import { trimAddress, wl } from '../misc';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import { BiLinkExternal } from 'react-icons/bi';
@@ -19,6 +23,7 @@ type TokenURI = {
 };
 
 const Home: NextPage = () => {
+  const testnet = useContext(TestnetContext);
   const tronWeb = useContext(TronWebContext);
   const tronWebFallback = useContext(TronWebFallbackContext);
   const [isFractionalized, setIsFractionalized] = useState(false);
@@ -37,6 +42,7 @@ const Home: NextPage = () => {
   const { register, handleSubmit, watch, formState } = useForm<any>();
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
+    const network = testnet ? 'shasta' : 'mainnet';
     console.log(chosenNFTs);
     console.log(data);
     setIsFractionalized(!isFractionalized);
@@ -47,9 +53,14 @@ const Home: NextPage = () => {
   };
 
   const onSearch: SubmitHandler<any> = async (data) => {
-    console.log(data);
-
-    const collection = wl[data.collection];
+    if (data.collection === 'bayctron' && testnet) {
+      data.collection = 'trontastybones'; // dirty fix for default value bug
+    }
+    if (data.collection === 'trontastybones' && !testnet) {
+      data.collection = 'bayctron'; // dirty fix for default value bug
+    }
+    const network = testnet ? 'shasta' : 'mainnet';
+    const collection = wl[network][data.collection];
     if (!collection) {
       console.log("we don't support this collection yet!");
       return;
@@ -57,22 +68,16 @@ const Home: NextPage = () => {
     setSearchedCollection(collection);
 
     try {
-      console.log(collection.address);
       const nftContract = await tronWeb.contract().at(collection.address);
-      console.log(nftContract);
 
       const owner = await nftContract.ownerOf(data.tokenId).call();
-      console.log(owner);
       const metadataURI = collection.baseURI + data.tokenId + collection.endURI;
-      console.log(metadataURI);
       const response = await fetch(metadataURI);
-      console.log(response);
       const uri = await response.json();
-      console.log(uri);
+
       if (collection.ipfsImage) {
         uri.image = 'https://ipfs.io/ipfs/' + uri.image.slice(7);
       }
-      console.log(uri.image);
       uri.owner = owner;
       setSearchedTokenURI(uri);
     } catch (e) {
@@ -93,8 +98,8 @@ const Home: NextPage = () => {
     try {
       // if (searchedTokenURI.owner === tronWeb.address.
       // compare the addresses below
-      console.log(searchedTokenURI.owner);
-      console.log(tronWeb.defaultAddress.hex);
+      // console.log(searchedTokenURI.owner);
+      // console.log(tronWeb.defaultAddress.hex);
     } catch (e) {}
     setChosenNFTs(chosenNFTs.concat([searchedTokenURI]));
   };
@@ -108,6 +113,18 @@ const Home: NextPage = () => {
   const handleContinue = () => {
     setCurrentStage('fractionalize');
   };
+
+  useEffect(() => {
+    setChosenNFTs([]);
+    setCurrentStage('select');
+    setSearchedTokenURI({
+      tokenId: '-1',
+      name: 'name',
+      image: 'image',
+      description: 'description',
+      owner: 'owner',
+    });
+  }, [testnet]);
 
   return (
     <Outer>
@@ -173,8 +190,25 @@ const Home: NextPage = () => {
                         required: true,
                       })}
                     >
-                      <option value="bayctron">BAYCTRON</option>
-                      <option value="mayctron">MAYCTRON</option>
+                      {testnet ? (
+                        <>
+                          <option value="trontastybones">
+                            Tron Tasty Bones
+                          </option>
+                          <option value="troncryptocoven">
+                            Tron Crypto Coven
+                          </option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="bayctron">BAYC Tron</option>
+                          <option value="mayctron">MAYC Tron</option>
+                          <option value="coolcatstron">Cool Cats Tron</option>
+                          <option value="metaversenameservice">
+                            Metaverse Name Service
+                          </option>
+                        </>
+                      )}
                     </select>
                   </div>
                   <div>
