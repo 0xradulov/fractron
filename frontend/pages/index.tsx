@@ -40,7 +40,6 @@ const Home: NextPage = () => {
           <Right>
             {new Array(100).fill(0).map((_, i) => {
               const name = indexToImageName(i + 1);
-              console.log(name);
               return (
                 <img src={`./doodle100/${name}`} key={name} alt="image"></img>
               );
@@ -62,7 +61,6 @@ const Home: NextPage = () => {
             <div className="inner">
               {new Array(100).fill(0).map((_, i) => {
                 const name = indexToImageName(i + 1);
-                console.log(name);
                 return (
                   <img src={`./doodle100/${name}`} key={name} alt="image"></img>
                 );
@@ -71,7 +69,6 @@ const Home: NextPage = () => {
             <div className="inner">
               {new Array(100).fill(0).map((_, i) => {
                 const name = indexToImageName(i + 1);
-                console.log(name);
                 return (
                   <img src={`./clonex100/${name}`} key={name} alt="image"></img>
                 );
@@ -80,7 +77,6 @@ const Home: NextPage = () => {
             <div className="inner">
               {new Array(100).fill(0).map((_, i) => {
                 const name = indexToImageName(i + 1);
-                console.log(name);
                 return (
                   <img
                     src={`./tronbies100/${name}`}
@@ -93,7 +89,6 @@ const Home: NextPage = () => {
             <div className="inner">
               {new Array(100).fill(0).map((_, i) => {
                 const name = indexToImageName(i + 1);
-                console.log(name);
                 return (
                   <img
                     src={`./coolcat100/${name}`}

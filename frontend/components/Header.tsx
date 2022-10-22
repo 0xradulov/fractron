@@ -3,12 +3,15 @@ import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import { BiUserCircle } from 'react-icons/bi';
 import { useContext } from 'react';
-import { ConnectedContext } from '../pages/_app';
+import { ConnectedContext, TestnetContext } from '../pages/_app';
 import { SecondaryButton } from './Buttons';
 
 export default function Header() {
   const { connected, setConnected } = useContext(ConnectedContext);
+  const testnet = useContext(TestnetContext);
   const router = useRouter();
+
+  console.log('testnet: ', testnet);
 
   const handleConnect = async () => {
     try {
@@ -36,7 +39,8 @@ export default function Header() {
       <LogoContainer>
         <Link href="/">
           <a className="logo">
-            frac<span>tron</span>
+            frac<span className="tron">tron</span>
+            {testnet && <span className="shasta">shasta</span>}
           </a>
         </Link>
         <Link href="/vaults">
@@ -98,16 +102,23 @@ const Container = styled.div`
 
 const LogoContainer = styled.div`
   display: flex;
-  gap: 1.5rem;
+  gap: 2.5rem;
   justify-self: center;
   align-items: center;
   .logo {
+    position: relative;
     color: ${({ theme }) => theme.colors.primary};
     font-size: ${({ theme }) => theme.typeScale.header2};
     font-weight: 700;
     margin-right: 1rem;
-    span {
+    .tron {
       color: ${({ theme }) => theme.colors.secondary};
+    }
+    .shasta {
+      color: black;
+      position: absolute;
+      top: 0;
+      font-size: 12px;
     }
     :hover {
       cursor: pointer;
@@ -119,7 +130,7 @@ const LogoContainer = styled.div`
 `;
 
 const Choice = styled.a<{ isActive: boolean }>`
-  padding-top: 0.5rem;
+  padding-top: 0.25rem;
   font-weight: 600;
   opacity: ${({ isActive }) => (isActive ? 1 : 0.6)};
 

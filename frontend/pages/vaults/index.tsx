@@ -15,7 +15,7 @@ export async function getStaticProps(context: any) {
 }
 
 const VaultsPage: NextPage = ({ vaults }: any) => {
-  console.log(vaults);
+  // console.log(vaults);
 
   return (
     <Outer>
