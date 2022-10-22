@@ -49,5 +49,12 @@ export const wl: { [key: string]: any } = {
       endURI: '.json',
       ipfsImage: false,
     },
+    testcollection: {
+      name: 'Test Collection',
+      address: 'TDb95thWuuHmCQRxRUpB7sv3Kr2qTEpNe5',
+      baseURI: '',
+      endURI: '',
+      ipfsImage: false,
+    },
   },
 };

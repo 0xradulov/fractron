@@ -6,7 +6,8 @@ contract TestNFT is ERC721("Test NFT", "TEST") {
     uint256 public tokenId = 1;
 
     function tokenURI(uint256) public pure override returns (string memory) {
-        return "test";
+        return
+            '{"name": "Test NFT", "description": "A Test NFT.", "image": "https://cpmr-islands.org/wp-content/uploads/sites/4/2019/07/test.png"}';
     }
 
     function mint() public returns (uint256) {

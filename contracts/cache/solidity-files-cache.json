@@ -406,8 +406,8 @@
       }
     },
     "/Users/alexander/dev/fractional/contracts/src/Fractron.sol": {
-      "lastModificationDate": 1666027835549,
-      "contentHash": "87a20d49787f17aa5681e278c41aa3de",
+      "lastModificationDate": 1666441443548,
+      "contentHash": "df72772869fa636c513b4211b6e33f0e",
       "sourceName": "src/Fractron.sol",
       "solcConfig": {
         "settings": {
@@ -492,8 +492,8 @@
       }
     },
     "/Users/alexander/dev/fractional/contracts/src/TestNFT.sol": {
-      "lastModificationDate": 1666028686087,
-      "contentHash": "b309c68ee80f4d1ccaff11b68248c03a",
+      "lastModificationDate": 1666442163219,
+      "contentHash": "2303998fdea723c72bd902f6347786ba",
       "sourceName": "src/TestNFT.sol",
       "solcConfig": {
         "settings": {

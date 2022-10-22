@@ -13,6 +13,7 @@ import { trimAddress, wl } from '../misc';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import { BiLinkExternal } from 'react-icons/bi';
 import Link from 'next/link';
+import { fractron } from '../addresses';
 
 type TokenURI = {
   tokenId: string;
@@ -20,6 +21,8 @@ type TokenURI = {
   image: string;
   description: string;
   owner: string;
+  address: string;
+  isApproved: boolean;
 };
 
 const Home: NextPage = () => {
@@ -31,21 +34,25 @@ const Home: NextPage = () => {
     'select'
   );
   const [chosenNFTs, setChosenNFTs] = useState<TokenURI[]>([]);
+  const [allChosenAreApproved, setAllChosenAreApproved] = useState(true);
   const [searchedTokenURI, setSearchedTokenURI] = useState<TokenURI>({
     tokenId: '-1',
     name: 'name',
     image: 'image',
     description: 'description',
     owner: 'owner',
+    address: '',
+    isApproved: false,
   });
   const [searchedCollection, setSearchedCollection] = useState(wl['bayctron']);
+  const [notOwnerError, setNotOwnerError] = useState(false);
   const { register, handleSubmit, watch, formState } = useForm<any>();
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
     const network = testnet ? 'shasta' : 'mainnet';
     console.log(chosenNFTs);
     console.log(data);
-    setIsFractionalized(!isFractionalized);
+    // setIsFractionalized(!isFractionalized);
     // do the actual fractionalization
     // await tronWeb.contract().at()
 
@@ -53,6 +60,8 @@ const Home: NextPage = () => {
   };
 
   const onSearch: SubmitHandler<any> = async (data) => {
+    console.log(data);
+
     if (data.collection === 'bayctron' && testnet) {
       data.collection = 'trontastybones'; // dirty fix for default value bug
     }
@@ -69,17 +78,34 @@ const Home: NextPage = () => {
 
     try {
       const nftContract = await tronWeb.contract().at(collection.address);
-
       const owner = await nftContract.ownerOf(data.tokenId).call();
-      const metadataURI = collection.baseURI + data.tokenId + collection.endURI;
-      const response = await fetch(metadataURI);
-      const uri = await response.json();
 
-      if (collection.ipfsImage) {
-        uri.image = 'https://ipfs.io/ipfs/' + uri.image.slice(7);
+      if (data.collection !== 'testcollection') {
+        const metadataURI =
+          collection.baseURI + data.tokenId + collection.endURI;
+        const response = await fetch(metadataURI);
+        const uri = await response.json();
+
+        if (collection.ipfsImage) {
+          uri.image = 'https://ipfs.io/ipfs/' + uri.image.slice(7);
+        }
+        uri.owner = owner;
+        uri.address = collection.address;
+        uri.isApproved = false;
+        setSearchedTokenURI(uri);
+      } else {
+        let uri = {
+          owner,
+          image:
+            'https://cpmr-islands.org/wp-content/uploads/sites/4/2019/07/test.png',
+          name: 'Test NFT',
+          description: 'A Test NFT.',
+          tokenId: data.tokenId,
+          address: collection.address,
+          isApproved: false,
+        };
+        setSearchedTokenURI(uri);
       }
-      uri.owner = owner;
-      setSearchedTokenURI(uri);
     } catch (e) {
       console.log(e);
     }
@@ -96,12 +122,34 @@ const Home: NextPage = () => {
     }
     // check if logged in user is the owner...
     try {
-      // if (searchedTokenURI.owner === tronWeb.address.
-      // compare the addresses below
-      // console.log(searchedTokenURI.owner);
-      // console.log(tronWeb.defaultAddress.hex);
-    } catch (e) {}
-    setChosenNFTs(chosenNFTs.concat([searchedTokenURI]));
+      if (searchedTokenURI.owner === tronWeb.defaultAddress.hex) {
+        setChosenNFTs(chosenNFTs.concat([searchedTokenURI]));
+        // check if approved
+        const network = testnet ? 'shasta' : 'mainnet';
+        const nftContract = await tronWeb
+          .contract()
+          .at(searchedTokenURI.address);
+        const isApproved = await nftContract
+          .isApprovedForAll(searchedTokenURI.owner, fractron[network])
+          .call();
+        console.log('ia', isApproved);
+        if (allChosenAreApproved) {
+          setAllChosenAreApproved(isApproved);
+        }
+        setSearchedTokenURI({
+          ...searchedTokenURI,
+          isApproved,
+        });
+      } else {
+        console.log("you cannot fractionalize NFTs you don't own.");
+        setNotOwnerError(true);
+        setTimeout(() => {
+          setNotOwnerError(false);
+        }, 10000);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const deleteFromChosenNFTs = (name: string, tokenId: string) => {
@@ -114,6 +162,11 @@ const Home: NextPage = () => {
     setCurrentStage('fractionalize');
   };
 
+  const approveCollection = () => {
+    // for all collection addresses in chosenNFTs that arent approved, approve
+    console.log(chosenNFTs);
+  };
+
   useEffect(() => {
     setChosenNFTs([]);
     setCurrentStage('select');
@@ -123,6 +176,8 @@ const Home: NextPage = () => {
       image: 'image',
       description: 'description',
       owner: 'owner',
+      address: '',
+      isApproved: false,
     });
   }, [testnet]);
 
@@ -198,6 +253,9 @@ const Home: NextPage = () => {
                           <option value="troncryptocoven">
                             Tron Crypto Coven
                           </option>
+                          <option value="testcollection">
+                            Test Collection
+                          </option>
                         </>
                       ) : (
                         <>
@@ -243,6 +301,9 @@ const Home: NextPage = () => {
                       <BlackButton onClick={handleChooseNFT}>
                         Choose
                       </BlackButton>
+                      {notOwnerError && (
+                        <p className="error">You don&apos;t own this NFT.</p>
+                      )}
                     </>
                   )}
                 </div>
@@ -295,7 +356,13 @@ const Home: NextPage = () => {
                     {formState.errors.symbol && <span>Symbol is required</span>}
                   </div>
                 </Double>
-                <Button type="submit">Fractionalize</Button>
+                {allChosenAreApproved ? (
+                  <Button type="submit">Fractionalize</Button>
+                ) : (
+                  <Button type="button" onClick={approveCollection}>
+                    Approve Collection
+                  </Button>
+                )}
               </RightForm>
             </Right>
           )}
@@ -385,6 +452,11 @@ const NFTContainer = styled.div`
   }
   .metadata {
     align-self: center;
+    .error {
+      margin-top: 0.25rem;
+      color: red;
+      font-weight: 500;
+    }
   }
 
   h1 {

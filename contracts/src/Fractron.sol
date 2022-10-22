@@ -41,6 +41,7 @@ contract Fractron {
         uint256[] tokenIds;
         uint256 tokenSupply;
         NFTShare tokenContract;
+        address creator;
     }
 
     event VaultCreated(Vault vault);
@@ -64,7 +65,8 @@ contract Fractron {
             nftContracts: nftContracts,
             tokenIds: tokenIds,
             tokenSupply: supply,
-            tokenContract: tokenContract
+            tokenContract: tokenContract,
+            creator: msg.sender
         });
 
         emit VaultCreated(vault);
