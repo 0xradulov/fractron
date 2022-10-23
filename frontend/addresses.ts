@@ -7,3 +7,8 @@ export const testcollection = {
   mainnet: '',
   shasta: 'TDb95thWuuHmCQRxRUpB7sv3Kr2qTEpNe5',
 };
+
+export const testcollection2 = {
+  mainnet: '',
+  shasta: 'TWxjijuiYij3h7ogtUaPBJkiVsNkfRdPz4',
+};

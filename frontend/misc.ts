@@ -56,5 +56,12 @@ export const wl: { [key: string]: any } = {
       endURI: '',
       ipfsImage: false,
     },
+    testcollection2: {
+      name: 'Test Collection 2',
+      address: 'TWxjijuiYij3h7ogtUaPBJkiVsNkfRdPz4',
+      baseURI: '',
+      endURI: '',
+      ipfsImage: false,
+    },
   },
 };

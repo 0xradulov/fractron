@@ -10,6 +10,7 @@ import {
   TronWebFallbackContext,
 } from '../pages/_app';
 import { trimAddress, wl } from '../misc';
+import Fractron from '../../contracts/out/Fractron.sol/Fractron.json';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import { BiLinkExternal } from 'react-icons/bi';
 import Link from 'next/link';
@@ -30,11 +31,14 @@ const Home: NextPage = () => {
   const tronWeb = useContext(TronWebContext);
   const tronWebFallback = useContext(TronWebFallbackContext);
   const [isFractionalized, setIsFractionalized] = useState(false);
+  const [isSplitting, setIsSplitting] = useState(false);
   const [currentStage, setCurrentStage] = useState<'select' | 'fractionalize'>(
     'select'
   );
   const [chosenNFTs, setChosenNFTs] = useState<TokenURI[]>([]);
   const [allChosenAreApproved, setAllChosenAreApproved] = useState(true);
+  const [notApprovedName, setNotApprovedName] = useState('');
+  const [approvalLoading, setApprovalLoading] = useState(false);
   const [searchedTokenURI, setSearchedTokenURI] = useState<TokenURI>({
     tokenId: '-1',
     name: 'name',
@@ -46,6 +50,12 @@ const Home: NextPage = () => {
   });
   const [searchedCollection, setSearchedCollection] = useState(wl['bayctron']);
   const [notOwnerError, setNotOwnerError] = useState(false);
+  const [vaultInfo, setVaultInfo] = useState({
+    address: '',
+    name: '',
+    symbol: '',
+    supply: '',
+  });
   const { register, handleSubmit, watch, formState } = useForm<any>();
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
@@ -54,7 +64,45 @@ const Home: NextPage = () => {
     console.log(data);
     // setIsFractionalized(!isFractionalized);
     // do the actual fractionalization
-    // await tronWeb.contract().at()
+    setIsSplitting(true);
+    try {
+      let contract = await tronWeb.contract(Fractron.abi, fractron.shasta);
+
+      const parameters = {
+        nftContracts: chosenNFTs.map((chosenNFT) => chosenNFT.address),
+        tokenIds: chosenNFTs.map((chosenNFT) => chosenNFT.tokenId),
+        supply: data.supply,
+        name: data.name,
+        symbol: data.symbol,
+      };
+
+      // APPROVE ERROR
+
+      let vaultId = await contract.split(...Object.values(parameters)).send({
+        feeLimit: 10000000000,
+        callValue: 0,
+        shouldPollResponse: true,
+      });
+
+      console.log('vault id:', vaultId);
+      // get the address with the vaultID
+      const vault = await contract.getVault(vaultId).call();
+      console.log(vault);
+
+      // cannot find result bullshit error
+      setVaultInfo({
+        address: tronWeb.address.fromHex(vault.tokenContract),
+        name: data.name,
+        supply: data.supply,
+        symbol: data.symbol,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+    setTimeout(() => {
+      setIsSplitting(false);
+      setIsFractionalized(!isFractionalized);
+    }, 5000);
 
     // show address, name, ticker and supply
   };
@@ -75,12 +123,37 @@ const Home: NextPage = () => {
       return;
     }
     setSearchedCollection(collection);
+    console.log(collection);
 
     try {
       const nftContract = await tronWeb.contract().at(collection.address);
       const owner = await nftContract.ownerOf(data.tokenId).call();
 
-      if (data.collection !== 'testcollection') {
+      if (data.collection === 'testcollection') {
+        let uri = {
+          owner,
+          image:
+            'https://cpmr-islands.org/wp-content/uploads/sites/4/2019/07/test.png',
+          name: 'Test NFT',
+          description: 'A Test NFT.',
+          tokenId: data.tokenId,
+          address: collection.address,
+          isApproved: false,
+        };
+        setSearchedTokenURI(uri);
+      } else if (data.collection === 'testcollection2') {
+        let uri = {
+          owner,
+          image:
+            'https://cpmr-islands.org/wp-content/uploads/sites/4/2019/07/test.png',
+          name: 'Test NFT 2',
+          description: 'Another Test NFT.',
+          tokenId: data.tokenId,
+          address: collection.address,
+          isApproved: false,
+        };
+        setSearchedTokenURI(uri);
+      } else {
         const metadataURI =
           collection.baseURI + data.tokenId + collection.endURI;
         const response = await fetch(metadataURI);
@@ -92,18 +165,6 @@ const Home: NextPage = () => {
         uri.owner = owner;
         uri.address = collection.address;
         uri.isApproved = false;
-        setSearchedTokenURI(uri);
-      } else {
-        let uri = {
-          owner,
-          image:
-            'https://cpmr-islands.org/wp-content/uploads/sites/4/2019/07/test.png',
-          name: 'Test NFT',
-          description: 'A Test NFT.',
-          tokenId: data.tokenId,
-          address: collection.address,
-          isApproved: false,
-        };
         setSearchedTokenURI(uri);
       }
     } catch (e) {
@@ -136,6 +197,9 @@ const Home: NextPage = () => {
         if (allChosenAreApproved) {
           setAllChosenAreApproved(isApproved);
         }
+        if (!isApproved) {
+          setNotApprovedName(searchedTokenURI.name);
+        }
         setSearchedTokenURI({
           ...searchedTokenURI,
           isApproved,
@@ -162,9 +226,51 @@ const Home: NextPage = () => {
     setCurrentStage('fractionalize');
   };
 
-  const approveCollection = () => {
+  const approveCollection = async () => {
     // for all collection addresses in chosenNFTs that arent approved, approve
+    let chosenNFTsNew = chosenNFTs;
     console.log(chosenNFTs);
+    const network = testnet ? 'shasta' : 'mainnet';
+    for (let i = 0; i < chosenNFTs.length; i++) {
+      if (chosenNFTs[i].name === notApprovedName) {
+        // approve
+        setApprovalLoading(true);
+        try {
+          const nftContract = await tronWeb
+            .contract()
+            .at(chosenNFTs[i].address);
+          const approval = await nftContract
+            .setApprovalForAll(fractron[network], true)
+            .send();
+          console.log(approval);
+        } catch (e) {
+          console.log(e);
+        }
+        setTimeout(() => {
+          setApprovalLoading(false);
+        }, 5000);
+
+        break;
+      }
+    }
+
+    for (let i = 0; i < chosenNFTsNew.length; i++) {
+      if (chosenNFTsNew[i].name === notApprovedName) {
+        chosenNFTsNew[i].isApproved = true;
+      }
+    }
+
+    setNotApprovedName('');
+    setAllChosenAreApproved(true);
+
+    for (let i = 0; i < chosenNFTsNew.length; i++) {
+      if (!chosenNFTsNew[i].isApproved) {
+        setNotApprovedName(chosenNFTsNew[i].name);
+        setAllChosenAreApproved(false);
+      }
+    }
+
+    setChosenNFTs(chosenNFTsNew);
   };
 
   useEffect(() => {
@@ -255,6 +361,9 @@ const Home: NextPage = () => {
                           </option>
                           <option value="testcollection">
                             Test Collection
+                          </option>
+                          <option value="testcollection2">
+                            Test Collection 2
                           </option>
                         </>
                       ) : (
@@ -356,11 +465,15 @@ const Home: NextPage = () => {
                     {formState.errors.symbol && <span>Symbol is required</span>}
                   </div>
                 </Double>
-                {allChosenAreApproved ? (
+                {allChosenAreApproved && isSplitting ? (
+                  <Button type="submit">Fractionalizing...</Button>
+                ) : allChosenAreApproved ? (
                   <Button type="submit">Fractionalize</Button>
+                ) : approvalLoading ? (
+                  <Button type="button">Loading...</Button>
                 ) : (
                   <Button type="button" onClick={approveCollection}>
-                    Approve Collection
+                    Approve {notApprovedName}
                   </Button>
                 )}
               </RightForm>
@@ -391,23 +504,22 @@ const Home: NextPage = () => {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <span>TFYFBn376Gp3kHqgTygCvRLGnGsY6D3e2D</span>{' '}
-                    <BiLinkExternal />
+                    <span>{vaultInfo.address}</span> <BiLinkExternal />
                   </a>
                 </div>
                 <div className="single vault-input">
                   <label>Vault Name:</label>
-                  <p>TBC Vault</p>
+                  <p>{vaultInfo.name}</p>
                 </div>
                 <Double>
                   <div className="vault-input">
                     <label>Token supply:</label>
-                    <p>10000</p>
+                    <p>{vaultInfo.supply}</p>
                   </div>
 
                   <div className="vault-input">
                     <label>Token symbol:</label>
-                    <p>TBC</p>
+                    <p>{vaultInfo.symbol}</p>
                   </div>
                 </Double>
                 <Button2
