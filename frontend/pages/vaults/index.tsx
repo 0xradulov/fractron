@@ -84,7 +84,7 @@ const VaultsPage: NextPage = () => {
         <Vaults>
           {vaults &&
             vaults.map((vault, i) => {
-              return (
+              return vault.collectionsCount > 0 ? (
                 <Link href={`/vaults/${i}`} key={i}>
                   <Vault>
                     <div className="top">
@@ -111,7 +111,7 @@ const VaultsPage: NextPage = () => {
                     </div>
                   </Vault>
                 </Link>
-              );
+              ) : null;
             })}
           {!vaults && <p>Loading...</p>}
         </Vaults>

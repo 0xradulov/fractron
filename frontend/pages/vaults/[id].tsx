@@ -3,8 +3,11 @@ import styled from 'styled-components';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import { BiLinkExternal } from 'react-icons/bi';
 import Link from 'next/link';
+import Fractron from '../../../contracts/out/Fractron.sol/Fractron.json';
+import ERC20 from '../../../contracts/out/ERC20.sol/ERC20.json';
+import { fractron } from '../../addresses';
 import { useQuery } from 'react-query';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import {
   TestnetContext,
   TronWebContext,
@@ -16,30 +19,135 @@ export default function Vault() {
   const { query } = useRouter();
   const tronWebFallback = useContext(TronWebFallbackContext);
   const tronWebFallbackShasta = useContext(TronWebFallbackContextShasta);
+  const tronWeb = useContext(TronWebContext);
   const testnet = useContext(TestnetContext);
-  // console.log(query.id);
+  const [erc20IsApproved, setErc20IsApproved] = useState(false);
 
-  const {
-    isLoading,
-    error,
-    data: vault,
-  } = useQuery(
+  const { data: vault } = useQuery(
     ['vault'],
     async () => {
-      return {
-        name: 'first vault',
-        supply: '100',
-        balance: 100,
-        collections: [],
-        tokenIds: [],
-      };
+      let tronWeb: any;
+      if (testnet) {
+        tronWeb = tronWebFallbackShasta;
+      } else {
+        tronWeb = tronWebFallback;
+      }
+      try {
+        const network = testnet ? 'shasta' : 'mainnet';
+        let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
+        let vault = await contract.getVault(query.id).call();
+
+        let parsedVault = {
+          nftContracts: vault.nftContracts.map((address: string) =>
+            tronWeb.address.fromHex(address)
+          ),
+          tokenIds: vault.tokenIds.map((id: any) => id.toString()),
+          tokenSupply: vault.tokenSupply.toString(),
+          tokenContract: tronWeb.address.fromHex(vault.tokenContract),
+          name: vault.name,
+          creator: tronWeb.address.fromHex(vault.creator),
+        };
+
+        return parsedVault;
+      } catch (e) {
+        console.log(e);
+        return {
+          nftContracts: [],
+          tokenIds: [],
+          tokenSupply: '0',
+          tokenContract: '',
+          name: '',
+          creator: '',
+        };
+      }
     },
     {
       enabled: !!tronWebFallback && !!tronWebFallbackShasta && !!query.id,
     }
   );
 
-  console.log(vault);
+  const { data: erc20 } = useQuery(
+    ['balance'],
+    async () => {
+      const network = testnet ? 'shasta' : 'mainnet';
+      try {
+        let contract = await tronWeb.contract(ERC20.abi, vault?.tokenContract);
+        let balance = await contract
+          .balanceOf(tronWeb.defaultAddress.hex)
+          .call();
+        let allowance = await contract
+          .allowance(tronWeb.defaultAddress.hex, fractron[network])
+          .call();
+
+        return { balance: balance.toString(), allowance: allowance.toString() };
+        // let vault = await contract.getVault(query.id).call();
+      } catch (e) {
+        console.log(e);
+        return { balance: '0', allowance: '0' };
+      }
+    },
+    {
+      enabled: !!tronWeb && !!vault,
+    }
+  );
+
+  const { data: nfts } = useQuery(
+    ['content'],
+    async () => {
+      let tronWeb: any;
+      if (testnet) {
+        tronWeb = tronWebFallbackShasta;
+      } else {
+        tronWeb = tronWebFallback;
+      }
+      try {
+        let nfts = [];
+        for (let i = 0; i < vault?.nftContracts.length; i++) {
+          let contract = await tronWeb.contract().at(vault?.nftContracts[i]);
+          let tokenURI = await contract.tokenURI(vault?.tokenIds[i]).call();
+          let parsedURI = JSON.parse(tokenURI);
+          const nft = {
+            ...parsedURI,
+            address: vault?.nftContracts[i],
+            tokenId: vault?.tokenIds[i],
+          };
+          nfts[i] = nft;
+        }
+        return nfts;
+      } catch (e) {
+        console.log(e);
+        return [];
+      }
+    },
+    {
+      enabled: !!vault,
+    }
+  );
+
+  const joinVault = async () => {
+    if (!query.id) return;
+    const network = testnet ? 'shasta' : 'mainnet';
+    let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
+    await contract.join(query.id).send({
+      feeLimit: 10000000000,
+      callValue: 0,
+      shouldPollResponse: false,
+    });
+  };
+
+  const approveVault = async () => {
+    if (!vault) return;
+
+    const network = testnet ? 'shasta' : 'mainnet';
+    let contract = await tronWeb.contract(ERC20.abi, vault?.tokenContract);
+    await contract
+      .approve(fractron[network], tronWeb.toSun('1000000000000'))
+      .send({
+        feeLimit: 10000000000,
+        callValue: 0,
+        shouldPollResponse: false,
+      });
+  };
 
   return (
     <Container>
@@ -49,21 +157,31 @@ export default function Vault() {
         </div>
         <div className="right">
           <h1>
-            BAYCTRON Vault <BsPatchCheckFill />
+            {vault?.name} <BsPatchCheckFill />
           </h1>
           <div className="box">
             <div className="">
               <p className="small">Total supply</p>
-              <p className="big">{vault?.supply} BAYT</p>
+              <p className="big">{vault?.tokenSupply} BAYT</p>
             </div>
             <div className="">
               <p className="small">Your balance</p>
-              <p className="big">{vault?.balance} BAYT</p>
+              <p className="big">{erc20?.balance} BAYT</p>
             </div>
-            <Button>Join vault</Button>
+            {erc20?.balance === vault?.tokenSupply &&
+            erc20?.allowance > erc20?.balance ? (
+              <Button onClick={() => joinVault()}>Join vault</Button>
+            ) : erc20?.balance === vault?.tokenSupply ? (
+              <Button onClick={() => approveVault()}>Approve vault</Button>
+            ) : null}
           </div>
           <Link href="/">
-            <a className="sunswap">
+            <a
+              className="sunswap"
+              href="https://sunswap.com/#/v2"
+              target="_blank"
+              rel="noreferrer"
+            >
               <div>
                 <img
                   src="https://assets.coingecko.com/coins/images/12424/small/RSFOmQ.png?1624024337"
@@ -77,17 +195,20 @@ export default function Vault() {
         </div>
       </Upper>
       <Lower>
-        <h1>NFTs inside the vault (${vault?.tokenIds.length})</h1>
+        <h1>NFTs inside the vault ({vault?.tokenIds.length})</h1>
         <div className="nfts">
-          {[...Array(5)].map((_, i) => {
+          {nfts?.map((nft, i) => {
             return (
               <div key={i} className="nft">
-                <img
-                  src="https://gateway.ipfs.io/ipfs/QmVWhjRUy2NxgNGpdjaWLbMZRhXZGwwqoupjbi9KNBjqEY"
-                  alt=""
-                ></img>
+                <img src={nft.image} alt={nft.name}></img>
                 <Link href="/">
-                  <a>
+                  <a
+                    href={`https://${
+                      testnet ? 'shasta.' : ''
+                    }tronscan.org/#/contract/${nft.address}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     <img
                       src="https://cryptologos.cc/logos/tron-trx-logo.svg?v=023"
                       alt=""
