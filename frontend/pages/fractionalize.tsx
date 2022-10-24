@@ -77,32 +77,39 @@ const Home: NextPage = () => {
       };
 
       // APPROVE ERROR
+      let currentVaultId = (await contract.currentVaultId().call()).toString();
+      console.log('cvi:', currentVaultId);
 
-      let vaultId = await contract.split(...Object.values(parameters)).send({
+      await contract.split(...Object.values(parameters)).send({
         feeLimit: 10000000000,
         callValue: 0,
-        shouldPollResponse: true,
+        shouldPollResponse: false,
       });
 
-      console.log('vault id:', vaultId);
       // get the address with the vaultID
-      const vault = await contract.getVault(vaultId).call();
-      console.log(vault);
+      setTimeout(async () => {
+        const vault = await contract.getVault(currentVaultId).call();
+        console.log(vault);
 
-      // cannot find result bullshit error
-      setVaultInfo({
-        address: tronWeb.address.fromHex(vault.tokenContract),
-        name: data.name,
-        supply: data.supply,
-        symbol: data.symbol,
-      });
+        setIsSplitting(false);
+        setIsFractionalized(!isFractionalized);
+
+        // cannot find result bullshit error
+        setVaultInfo({
+          address: tronWeb.address.fromHex(vault.tokenContract),
+          name: data.name,
+          supply: data.supply,
+          symbol: data.symbol,
+        });
+      }, 10000);
     } catch (e) {
+      setIsSplitting(false);
       console.log(e);
     }
-    setTimeout(() => {
-      setIsSplitting(false);
-      setIsFractionalized(!isFractionalized);
-    }, 5000);
+    // setTimeout(() => {
+    //   setIsSplitting(false);
+    //   setIsFractionalized(!isFractionalized);
+    // }, 5000);
 
     // show address, name, ticker and supply
   };
@@ -500,7 +507,9 @@ const Home: NextPage = () => {
                   <label>Vault Address:</label>
 
                   <a
-                    href="https://tronscan.org"
+                    href={`https://${
+                      testnet ? 'shasta.' : ''
+                    }tronscan.org/#/contract/${vaultInfo.address}`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -531,7 +540,7 @@ const Home: NextPage = () => {
                 </Button2>
                 <a
                   className="sunswap"
-                  href="https://tronscan.org"
+                  href="https://sunswap.com/#/v2"
                   target="_blank"
                   rel="noreferrer"
                 >

@@ -32,25 +32,31 @@ const VaultsPage: NextPage = () => {
       } else {
         tronWeb = tronWebFallback;
       }
+      try {
+        let parsedVaults = [];
+        const network = testnet ? 'shasta' : 'mainnet';
+        let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
+        let vaults = await contract.getAllVaults().call();
+        console.log('l', vaults.length);
 
-      const network = testnet ? 'shasta' : 'mainnet';
-      let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
-      let vaults = await contract.getAllVaults().call();
-      let parsedVaults = [];
-      for (let i = 0; i < vaults.length; i++) {
-        let collections: string[] = [];
-        for (let collection of vaults[i][0]) {
-          if (!collections.includes(collection)) {
-            collections.push(collection);
+        for (let i = 0; i < vaults.length; i++) {
+          let collections: string[] = [];
+          for (let collection of vaults[i][0]) {
+            if (!collections.includes(collection)) {
+              collections.push(collection);
+            }
           }
+          parsedVaults[i] = {
+            collectionsCount: collections.length,
+            nftCount: vaults[i][1].length,
+            name: vaults[i][5],
+          };
         }
-        parsedVaults[i] = {
-          collectionsCount: collections.length,
-          nftCount: vaults[i][1].length,
-          name: 'Placeholder Name',
-        };
+        return parsedVaults;
+      } catch (e) {
+        console.log(e);
+        return [];
       }
-      return parsedVaults;
     },
     {
       enabled: !!tronWebFallback && !!tronWebFallbackShasta,

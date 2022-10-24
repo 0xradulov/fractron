@@ -406,8 +406,8 @@
       }
     },
     "/Users/alexander/dev/fractional/contracts/src/Fractron.sol": {
-      "lastModificationDate": 1666441443548,
-      "contentHash": "df72772869fa636c513b4211b6e33f0e",
+      "lastModificationDate": 1666597275260,
+      "contentHash": "808a6a8151bd7e938e365e35384414ad",
       "sourceName": "src/Fractron.sol",
       "solcConfig": {
         "settings": {
@@ -492,8 +492,8 @@
       }
     },
     "/Users/alexander/dev/fractional/contracts/src/TestNFT.sol": {
-      "lastModificationDate": 1666442163219,
-      "contentHash": "2303998fdea723c72bd902f6347786ba",
+      "lastModificationDate": 1666512283253,
+      "contentHash": "3deff7ed5a3c44e4ab1bd2ed30f08108",
       "sourceName": "src/TestNFT.sol",
       "solcConfig": {
         "settings": {
@@ -527,6 +527,9 @@
       "artifacts": {
         "TestNFT": {
           "0.8.10+commit.fc410830.Darwin.appleclang": "TestNFT.sol/TestNFT.json"
+        },
+        "TestNFT2": {
+          "0.8.10+commit.fc410830.Darwin.appleclang": "TestNFT.sol/TestNFT2.json"
         }
       }
     },

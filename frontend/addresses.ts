@@ -1,14 +1,14 @@
 export const fractron = {
   mainnet: '',
-  shasta: 'TWf2SukQGhAMW4vT1CDsaScP7UnFbdvQFx',
+  shasta: 'TFePQQwG3gcBKQwWZ3Waukn7YANYLEUXu4',
 };
 
 export const testcollection = {
   mainnet: '',
-  shasta: 'TDb95thWuuHmCQRxRUpB7sv3Kr2qTEpNe5',
+  shasta: 'TPULB89TQXHmm9us8LDakxkbSDvhTPaaD2',
 };
 
 export const testcollection2 = {
   mainnet: '',
-  shasta: 'TWxjijuiYij3h7ogtUaPBJkiVsNkfRdPz4',
+  shasta: 'TFRS7q9tkojBZotDeUVWiLUHp2MrQrESGU',
 };

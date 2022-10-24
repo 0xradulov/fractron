@@ -26,28 +26,19 @@ contract NFTShare is ERC20 {
 }
 
 contract Fractron {
-    /// @notice Thrown when trying to rejoin a token from a vault that doesn't exist
-    // error VaultNotFound();
-    /// @notice Thrown when trying to create vault that can't exist
-    // error InvalidVault();
-
-    /// @dev Parameters for vaults
-    /// @param nftContracts The ERC721 contracts for the fractionalized tokens
-    /// @param tokenIds The IDs of the fractionalized tokens
-    /// @param tokenSupply The amount of issued ERC20 tokens for this vault
-    /// @param tokenContract The ERC20 contract for the issued tokens
     struct Vault {
         ERC721[] nftContracts;
         uint256[] tokenIds;
         uint256 tokenSupply;
         NFTShare tokenContract;
         address creator;
+        string name;
     }
 
     event VaultCreated(Vault vault);
     event VaultDestroyed(Vault vault);
 
-    uint256 internal currentVaultId = 0;
+    uint256 public currentVaultId = 0;
     mapping(uint256 => Vault) public vaultById;
 
     function split(
@@ -66,7 +57,8 @@ contract Fractron {
             tokenIds: tokenIds,
             tokenSupply: supply,
             tokenContract: tokenContract,
-            creator: msg.sender
+            creator: msg.sender,
+            name: name
         });
 
         emit VaultCreated(vault);

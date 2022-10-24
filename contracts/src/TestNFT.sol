@@ -16,3 +16,18 @@ contract TestNFT is ERC721("Test NFT", "TEST") {
         return tokenId++;
     }
 }
+
+contract TestNFT2 is ERC721("Test NFT 2", "TEST2") {
+    uint256 public tokenId = 1;
+
+    function tokenURI(uint256) public pure override returns (string memory) {
+        return
+            '{"name": "Test NFT 2", "description": "Another Test NFT.", "image": "https://cpmr-islands.org/wp-content/uploads/sites/4/2019/07/test.png"}';
+    }
+
+    function mint() public returns (uint256) {
+        _mint(msg.sender, tokenId);
+
+        return tokenId++;
+    }
+}

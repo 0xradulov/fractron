@@ -3,47 +3,49 @@ import styled from 'styled-components';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import { BiLinkExternal } from 'react-icons/bi';
 import Link from 'next/link';
-
-export async function getStaticPaths() {
-  const paths = [];
-  for (let i = 0; i < 10; i++) {
-    paths.push({ params: { id: i.toString() } });
-  }
-  return {
-    paths,
-    fallback: false, // can also be true or 'blocking'
-  };
-}
-
-export async function getStaticProps({ params }: any) {
-  console.log(params.id);
-  // get vault
-  let vault = {
-    nftContracts: [],
-    tokenIds: [],
-    tokenSupply: 10000,
-    tokenContract: '0x0000000000000000000000000000000000000000',
-  };
-  // get nft images
-  // vault.images = blablabla
-
-  return {
-    props: {}, // will be passed to the page component as props
-  };
-}
+import { useQuery } from 'react-query';
+import { useContext } from 'react';
+import {
+  TestnetContext,
+  TronWebContext,
+  TronWebFallbackContext,
+  TronWebFallbackContextShasta,
+} from '../../pages/_app';
 
 export default function Vault() {
   const { query } = useRouter();
+  const tronWebFallback = useContext(TronWebFallbackContext);
+  const tronWebFallbackShasta = useContext(TronWebFallbackContextShasta);
+  const testnet = useContext(TestnetContext);
   // console.log(query.id);
+
+  const {
+    isLoading,
+    error,
+    data: vault,
+  } = useQuery(
+    ['vault'],
+    async () => {
+      return {
+        name: 'first vault',
+        supply: '100',
+        balance: 100,
+        collections: [],
+        tokenIds: [],
+      };
+    },
+    {
+      enabled: !!tronWebFallback && !!tronWebFallbackShasta && !!query.id,
+    }
+  );
+
+  console.log(vault);
 
   return (
     <Container>
       <Upper>
         <div className="left">
-          <img
-            src="https://gateway.ipfs.io/ipfs/QmVWhjRUy2NxgNGpdjaWLbMZRhXZGwwqoupjbi9KNBjqEY"
-            alt=""
-          ></img>
+          <img src="/coolcat.png" alt=""></img>
         </div>
         <div className="right">
           <h1>
@@ -52,11 +54,11 @@ export default function Vault() {
           <div className="box">
             <div className="">
               <p className="small">Total supply</p>
-              <p className="big">10000 BAYT</p>
+              <p className="big">{vault?.supply} BAYT</p>
             </div>
             <div className="">
               <p className="small">Your balance</p>
-              <p className="big">10000 BAYT</p>
+              <p className="big">{vault?.balance} BAYT</p>
             </div>
             <Button>Join vault</Button>
           </div>
@@ -75,7 +77,7 @@ export default function Vault() {
         </div>
       </Upper>
       <Lower>
-        <h1>NFTs inside the vault (5)</h1>
+        <h1>NFTs inside the vault (${vault?.tokenIds.length})</h1>
         <div className="nfts">
           {[...Array(5)].map((_, i) => {
             return (
@@ -153,6 +155,7 @@ const Upper = styled.div`
   /* grid-template-columns: 1fr 1fr; */
   .left {
     img {
+      border-radius: 1rem;
       height: 400px;
       width: 400px;
     }

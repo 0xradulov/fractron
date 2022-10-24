@@ -1,3 +1,5 @@
+import { testcollection, testcollection2 } from './addresses';
+
 export const trimAddress = (address: string) => {
   return address.slice(0, 10) + '...' + address.slice(30, address.length);
 };
@@ -65,14 +67,14 @@ export const wl: { [key: string]: any } = {
     },
     testcollection: {
       name: 'Test Collection',
-      address: 'TDb95thWuuHmCQRxRUpB7sv3Kr2qTEpNe5',
+      address: testcollection.shasta,
       baseURI: '',
       endURI: '',
       ipfsImage: false,
     },
     testcollection2: {
       name: 'Test Collection 2',
-      address: 'TWxjijuiYij3h7ogtUaPBJkiVsNkfRdPz4',
+      address: testcollection2.shasta,
       baseURI: '',
       endURI: '',
       ipfsImage: false,
