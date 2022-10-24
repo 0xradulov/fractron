@@ -2,20 +2,70 @@ import type { NextPage } from 'next';
 import styled from 'styled-components';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import Link from 'next/link';
+import Fractron from '../../../contracts/out/Fractron.sol/Fractron.json';
+import { fractron } from '../../addresses';
+const TronWeb = require('tronweb');
+import { useQuery } from 'react-query';
+import {
+  TestnetContext,
+  TronWebContext,
+  TronWebFallbackContext,
+  TronWebFallbackContextShasta,
+} from '../../pages/_app';
+import { useContext } from 'react';
 
-export async function getStaticProps(context: any) {
-  // call getAllVaults
-  // nftcontracts, tokenids, tokensupply, erc20 contract
-  const vaults = [[[], [], 1000, 0xabc]];
-  // get header image for every collection here
+const VaultsPage: NextPage = () => {
+  const tronWebFallback = useContext(TronWebFallbackContext);
+  const tronWebFallbackShasta = useContext(TronWebFallbackContextShasta);
+  const testnet = useContext(TestnetContext);
 
-  return {
-    props: { vaults }, // will be passed to the page component as props
-  };
-}
+  const {
+    isLoading,
+    error,
+    data: vaults,
+  } = useQuery(
+    ['vaults'],
+    async () => {
+      let tronWeb;
+      if (testnet) {
+        tronWeb = tronWebFallbackShasta;
+      } else {
+        tronWeb = tronWebFallback;
+      }
 
-const VaultsPage: NextPage = ({ vaults }: any) => {
-  // console.log(vaults);
+      const network = testnet ? 'shasta' : 'mainnet';
+      let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
+      let vaults = await contract.getAllVaults().call();
+      let parsedVaults = [];
+      for (let i = 0; i < vaults.length; i++) {
+        let collections: string[] = [];
+        for (let collection of vaults[i][0]) {
+          if (!collections.includes(collection)) {
+            collections.push(collection);
+          }
+        }
+        parsedVaults[i] = {
+          collectionsCount: collections.length,
+          nftCount: vaults[i][1].length,
+          name: 'Placeholder Name',
+        };
+      }
+      return parsedVaults;
+    },
+    {
+      enabled: !!tronWebFallback && !!tronWebFallbackShasta,
+    }
+  );
+
+  console.log(vaults);
+
+  const coverImages = [
+    'coolcat.png',
+    'clonex.png',
+    'bayc.jpeg',
+    'doodle.jpeg',
+    'mayc.png',
+  ];
 
   return (
     <Outer>
@@ -26,36 +76,38 @@ const VaultsPage: NextPage = ({ vaults }: any) => {
           </h1>
         </div>
         <Vaults>
-          {[...Array(8)].map((_, i) => {
-            return (
-              <Link href={`/vaults/${i}`} key={i}>
-                <Vault>
-                  <div className="top">
-                    <img
-                      src="https://gateway.ipfs.io/ipfs/QmVWhjRUy2NxgNGpdjaWLbMZRhXZGwwqoupjbi9KNBjqEY"
-                      alt=""
-                    ></img>
-                  </div>
-                  <div className="bottom">
-                    <div className="title">
-                      <p>BAYCTRON Vault </p>
-                      <BsPatchCheckFill />
+          {vaults &&
+            vaults.map((vault, i) => {
+              return (
+                <Link href={`/vaults/${i}`} key={i}>
+                  <Vault>
+                    <div className="top">
+                      <img
+                        src={`./${coverImages[i % coverImages.length]}`}
+                        alt=""
+                      ></img>
                     </div>
-                    <div className="details">
-                      <div>
-                        <p className="header"># of collections</p>
-                        <p>3</p>
+                    <div className="bottom">
+                      <div className="title">
+                        <p>{vault.name} </p>
+                        <BsPatchCheckFill />
                       </div>
-                      <div>
-                        <p className="header"># of NFTs</p>
-                        <p>323</p>
+                      <div className="details">
+                        <div>
+                          <p className="header"># of collections</p>
+                          <p>{vault.collectionsCount}</p>
+                        </div>
+                        <div>
+                          <p className="header"># of NFTs</p>
+                          <p>{vault.nftCount}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Vault>
-              </Link>
-            );
-          })}
+                  </Vault>
+                </Link>
+              );
+            })}
+          {!vaults && <p>Loading...</p>}
         </Vaults>
       </Inner>
     </Outer>
@@ -75,6 +127,8 @@ const Vault = styled.a`
     border-radius: 1rem 1rem 0 0;
     /* background-color: blue; */
     img {
+      border-radius: 1rem 1rem 0 0;
+
       height: 100%;
       width: 350px;
     }

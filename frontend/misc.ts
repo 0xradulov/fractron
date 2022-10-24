@@ -2,6 +2,20 @@ export const trimAddress = (address: string) => {
   return address.slice(0, 10) + '...' + address.slice(30, address.length);
 };
 
+export const indexToImageName = (i: number) => {
+  // assumes that i < 1000
+  let name = 'image_part_';
+  if (i < 10) {
+    name += `00${i}.jpg`;
+  } else if (i < 100) {
+    name += `0${i}.jpg`;
+  } else {
+    name += `${i}.jpg`;
+  }
+
+  return name;
+};
+
 export const wl: { [key: string]: any } = {
   mainnet: {
     bayctron: {

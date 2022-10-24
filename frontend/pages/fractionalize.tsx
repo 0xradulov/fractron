@@ -66,7 +66,7 @@ const Home: NextPage = () => {
     // do the actual fractionalization
     setIsSplitting(true);
     try {
-      let contract = await tronWeb.contract(Fractron.abi, fractron.shasta);
+      let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
 
       const parameters = {
         nftContracts: chosenNFTs.map((chosenNFT) => chosenNFT.address),
