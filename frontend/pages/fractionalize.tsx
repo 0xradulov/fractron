@@ -60,15 +60,11 @@ const Home: NextPage = () => {
   const searchForm = useForm<any>();
   const onSubmit: SubmitHandler<any> = async (data) => {
     const network = testnet ? 'shasta' : 'mainnet';
-    console.log(chosenNFTs);
-    console.log(data);
     // setIsFractionalized(!isFractionalized);
     // do the actual fractionalization
     setIsSplitting(true);
     try {
       let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
-
-      console.log(chosenNFTs);
       const parameters = {
         nftContracts: chosenNFTs.map((chosenNFT) => chosenNFT.address),
         tokenIds: chosenNFTs.map((chosenNFT) => chosenNFT.tokenId),
@@ -77,11 +73,7 @@ const Home: NextPage = () => {
         symbol: data.symbol,
       };
 
-      // APPROVE ERROR
-      console.log(parameters);
-
       let currentVaultId = (await contract.currentVaultId().call()).toString();
-      console.log('cvi:', currentVaultId);
 
       await contract.split(...Object.values(parameters)).send({
         feeLimit: 10000000000,
@@ -92,7 +84,6 @@ const Home: NextPage = () => {
       // get the address with the vaultID
       setTimeout(async () => {
         const vault = await contract.getVault(currentVaultId).call();
-        console.log(vault);
 
         setIsSplitting(false);
         setIsFractionalized(!isFractionalized);
@@ -118,8 +109,6 @@ const Home: NextPage = () => {
   };
 
   const onSearch: SubmitHandler<any> = async (data) => {
-    console.log(data);
-
     if (data.collection === 'bayctron' && testnet) {
       data.collection = 'trontastybones'; // dirty fix for default value bug
     }
@@ -133,7 +122,6 @@ const Home: NextPage = () => {
       return;
     }
     setSearchedCollection(collection);
-    console.log(collection);
 
     try {
       const nftContract = await tronWeb.contract().at(collection.address);
@@ -204,7 +192,6 @@ const Home: NextPage = () => {
         const isApproved = await nftContract
           .isApprovedForAll(searchedTokenURI.owner, fractron[network])
           .call();
-        console.log('ia', isApproved);
         if (allChosenAreApproved) {
           setAllChosenAreApproved(isApproved);
         }
@@ -240,7 +227,6 @@ const Home: NextPage = () => {
   const approveCollection = async () => {
     // for all collection addresses in chosenNFTs that arent approved, approve
     let chosenNFTsNew = chosenNFTs;
-    console.log(chosenNFTs);
     const network = testnet ? 'shasta' : 'mainnet';
     for (let i = 0; i < chosenNFTs.length; i++) {
       if (chosenNFTs[i].name === notApprovedName) {
@@ -253,7 +239,6 @@ const Home: NextPage = () => {
           const approval = await nftContract
             .setApprovalForAll(fractron[network], true)
             .send();
-          console.log(approval);
         } catch (e) {
           console.log(e);
         }

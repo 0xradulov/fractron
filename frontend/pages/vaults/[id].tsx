@@ -108,13 +108,11 @@ export default function Vault() {
           let contract = await tronWeb.contract().at(vault.nftContracts[i]);
           let tokenURI = await contract.tokenURI(vault.tokenIds[i]).call();
           if (vault.nftContracts[i] === 'TJjKSaj9UD9tQ27zvN6hpXiCwN2VsdNW7P') {
-            console.log('MAYC');
             tokenURI =
               'https://tronapes.com/api/v1/nft/mutant/' + vault.tokenIds[i];
           } else if (
             vault.nftContracts[i] === 'TWi53fvZgTsW8tvAQmYVeThnBeyJqEfJhQ'
           ) {
-            console.log('BAYC');
             tokenURI =
               'https://tronapes.com/api/v1/nft/ape/' + vault.tokenIds[i];
           }
@@ -126,11 +124,9 @@ export default function Vault() {
             tokenId: vault?.tokenIds[i],
           };
           // check if mayc or bayc
-          console.log(vault.nftContracts[i]);
 
           nfts[i] = nft;
         }
-        console.log(nfts);
 
         return nfts;
       } catch (e) {

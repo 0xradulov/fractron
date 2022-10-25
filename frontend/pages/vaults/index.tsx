@@ -37,7 +37,6 @@ const VaultsPage: NextPage = () => {
         const network = testnet ? 'shasta' : 'mainnet';
         let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
         let vaults = await contract.getAllVaults().call();
-        console.log('l', vaults.length);
 
         for (let i = 0; i < vaults.length; i++) {
           let collections: string[] = [];
@@ -62,8 +61,6 @@ const VaultsPage: NextPage = () => {
       enabled: !!tronWebFallback && !!tronWebFallbackShasta,
     }
   );
-
-  console.log(vaults);
 
   const coverImages = ['coolcat.png', 'coolcat.png', 'mayc.png'];
 

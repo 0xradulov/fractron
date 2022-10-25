@@ -30,13 +30,8 @@ const Profile: NextPage = () => {
         let parsedVaults = [];
         let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
         let vaults = await contract.getAllVaults().call();
-        console.log('l', vaults.length);
 
         for (let i = 0; i < vaults.length; i++) {
-          console.log(vaults[i].creator);
-          console.log(tronWeb.defaultAddress.hex);
-          console.log(vaults[i].creator !== tronWeb.defaultAddress.hex);
-
           if (vaults[i].creator !== tronWeb.defaultAddress.hex) continue;
           let collections: string[] = [];
           for (let collection of vaults[i][0]) {
@@ -60,8 +55,6 @@ const Profile: NextPage = () => {
       enabled: !!tronWeb && !!testnet,
     }
   );
-
-  console.log(vaults);
 
   const coverImages = [
     'coolcat.png',
