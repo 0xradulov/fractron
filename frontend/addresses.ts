@@ -1,6 +1,6 @@
 export const fractron = {
-  mainnet: '',
-  shasta: 'TFePQQwG3gcBKQwWZ3Waukn7YANYLEUXu4',
+  mainnet: 'TSeevPEBWm7BsXT7JzFaDGeT1R7yzPU7TZ',
+  shasta: 'TGSmsCYcXLrPbP3eTeJ87PoEtj7fxp33pw',
 };
 
 export const testcollection = {

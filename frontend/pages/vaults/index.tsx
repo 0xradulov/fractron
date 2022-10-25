@@ -65,13 +65,7 @@ const VaultsPage: NextPage = () => {
 
   console.log(vaults);
 
-  const coverImages = [
-    'coolcat.png',
-    'clonex.png',
-    'bayc.jpeg',
-    'doodle.jpeg',
-    'mayc.png',
-  ];
+  const coverImages = ['coolcat.png', 'coolcat.png', 'mayc.png'];
 
   return (
     <Outer>

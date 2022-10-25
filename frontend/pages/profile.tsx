@@ -2,11 +2,74 @@ import type { NextPage } from 'next';
 import styled from 'styled-components';
 import { BsPatchCheckFill } from 'react-icons/bs';
 import Link from 'next/link';
+import { useContext } from 'react';
+import { useQuery } from 'react-query';
+import Fractron from '../../contracts/out/Fractron.sol/Fractron.json';
+import { fractron } from '../addresses';
+const TronWeb = require('tronweb');
+import {
+  TestnetContext,
+  TronWebContext,
+  TronWebFallbackContext,
+  TronWebFallbackContextShasta,
+} from '../pages/_app';
 
 const Profile: NextPage = () => {
-  // get logged in assets
-  // query contract for fractions
-  // add creator to vaults?
+  const tronWeb = useContext(TronWebContext);
+  const testnet = useContext(TestnetContext);
+
+  const {
+    isLoading,
+    error,
+    data: vaults,
+  } = useQuery(
+    ['vaults'],
+    async () => {
+      const network = testnet ? 'shasta' : 'mainnet';
+      try {
+        let parsedVaults = [];
+        let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
+        let vaults = await contract.getAllVaults().call();
+        console.log('l', vaults.length);
+
+        for (let i = 0; i < vaults.length; i++) {
+          console.log(vaults[i].creator);
+          console.log(tronWeb.defaultAddress.hex);
+          console.log(vaults[i].creator !== tronWeb.defaultAddress.hex);
+
+          if (vaults[i].creator !== tronWeb.defaultAddress.hex) continue;
+          let collections: string[] = [];
+          for (let collection of vaults[i][0]) {
+            if (!collections.includes(collection)) {
+              collections.push(collection);
+            }
+          }
+          parsedVaults[i] = {
+            collectionsCount: collections.length,
+            nftCount: vaults[i][1].length,
+            name: vaults[i][5],
+          };
+        }
+        return parsedVaults;
+      } catch (e) {
+        console.log(e);
+        return [];
+      }
+    },
+    {
+      enabled: !!tronWeb && !!testnet,
+    }
+  );
+
+  console.log(vaults);
+
+  const coverImages = [
+    'coolcat.png',
+    'clonex.png',
+    'bayc.jpeg',
+    'doodle.jpeg',
+    'mayc.png',
+  ];
 
   return (
     <Outer>
@@ -17,36 +80,37 @@ const Profile: NextPage = () => {
           </h1>
         </div>
         <Vaults>
-          {[...Array(3)].map((_, i) => {
-            return (
-              <Link href={`/vaults/${i}`} key={i}>
-                <Vault>
-                  <div className="top">
-                    <img
-                      src="https://gateway.ipfs.io/ipfs/QmVWhjRUy2NxgNGpdjaWLbMZRhXZGwwqoupjbi9KNBjqEY"
-                      alt=""
-                    ></img>
-                  </div>
-                  <div className="bottom">
-                    <div className="title">
-                      <p>BAYCTRON Vault </p>
-                      <BsPatchCheckFill />
+          {vaults &&
+            vaults.map((vault, i) => {
+              return vault?.collectionsCount > 0 ? (
+                <Link href={`/vaults/${i}`} key={i}>
+                  <Vault>
+                    <div className="top">
+                      <img
+                        src={`./${coverImages[i % coverImages.length]}`}
+                        alt=""
+                      ></img>
                     </div>
-                    <div className="details">
-                      <div>
-                        <p className="header">Your balance</p>
-                        <p>7800</p>
+                    <div className="bottom">
+                      <div className="title">
+                        <p>{vault.name} </p>
+                        <BsPatchCheckFill />
                       </div>
-                      <div>
-                        <p className="header">Total supply</p>
-                        <p>10000</p>
+                      <div className="details">
+                        <div>
+                          <p className="header"># of collections</p>
+                          <p>{vault.collectionsCount}</p>
+                        </div>
+                        <div>
+                          <p className="header"># of NFTs</p>
+                          <p>{vault.nftCount}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Vault>
-              </Link>
-            );
-          })}
+                  </Vault>
+                </Link>
+              ) : null;
+            })}
         </Vaults>
       </Inner>
     </Outer>

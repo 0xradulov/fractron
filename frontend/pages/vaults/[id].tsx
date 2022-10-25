@@ -7,7 +7,7 @@ import Fractron from '../../../contracts/out/Fractron.sol/Fractron.json';
 import ERC20 from '../../../contracts/out/ERC20.sol/ERC20.json';
 import { fractron } from '../../addresses';
 import { useQuery } from 'react-query';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   TestnetContext,
   TronWebContext,
@@ -22,6 +22,7 @@ export default function Vault() {
   const tronWeb = useContext(TronWebContext);
   const testnet = useContext(TestnetContext);
   const [erc20IsApproved, setErc20IsApproved] = useState(false);
+  const [idx, setIdx] = useState(0);
 
   const { data: vault } = useQuery(
     ['vault'],
@@ -94,6 +95,7 @@ export default function Vault() {
   const { data: nfts } = useQuery(
     ['content'],
     async () => {
+      if (!vault) return;
       let tronWeb: any;
       if (testnet) {
         tronWeb = tronWebFallbackShasta;
@@ -102,20 +104,37 @@ export default function Vault() {
       }
       try {
         let nfts = [];
-        for (let i = 0; i < vault?.nftContracts.length; i++) {
-          let contract = await tronWeb.contract().at(vault?.nftContracts[i]);
-          let tokenURI = await contract.tokenURI(vault?.tokenIds[i]).call();
-          let parsedURI = JSON.parse(tokenURI);
+        for (let i = 0; i < vault.nftContracts.length; i++) {
+          let contract = await tronWeb.contract().at(vault.nftContracts[i]);
+          let tokenURI = await contract.tokenURI(vault.tokenIds[i]).call();
+          if (vault.nftContracts[i] === 'TJjKSaj9UD9tQ27zvN6hpXiCwN2VsdNW7P') {
+            console.log('MAYC');
+            tokenURI =
+              'https://tronapes.com/api/v1/nft/mutant/' + vault.tokenIds[i];
+          } else if (
+            vault.nftContracts[i] === 'TWi53fvZgTsW8tvAQmYVeThnBeyJqEfJhQ'
+          ) {
+            console.log('BAYC');
+            tokenURI =
+              'https://tronapes.com/api/v1/nft/ape/' + vault.tokenIds[i];
+          }
+          let metadata = await (await fetch(tokenURI)).json();
+          // let parsedURI =  JSON.parse(tokenURI);
           const nft = {
-            ...parsedURI,
+            ...metadata,
             address: vault?.nftContracts[i],
             tokenId: vault?.tokenIds[i],
           };
+          // check if mayc or bayc
+          console.log(vault.nftContracts[i]);
+
           nfts[i] = nft;
         }
+        console.log(nfts);
+
         return nfts;
       } catch (e) {
-        console.log(e);
+        console.log('ee:', e);
         return [];
       }
     },
@@ -141,7 +160,7 @@ export default function Vault() {
     const network = testnet ? 'shasta' : 'mainnet';
     let contract = await tronWeb.contract(ERC20.abi, vault?.tokenContract);
     await contract
-      .approve(fractron[network], tronWeb.toSun('1000000000000'))
+      .approve(fractron[network], tronWeb.toSun('1000000000'))
       .send({
         feeLimit: 10000000000,
         callValue: 0,
@@ -149,11 +168,26 @@ export default function Vault() {
       });
   };
 
+  useEffect(() => {
+    if (!nfts) return;
+
+    const inter = setInterval(() => {
+      setIdx((prev) => {
+        return ++prev % nfts.length;
+      });
+    }, 5000);
+
+    return () => clearInterval(inter);
+  }, [nfts]);
+
   return (
     <Container>
       <Upper>
         <div className="left">
-          <img src="/coolcat.png" alt=""></img>
+          <img
+            src={nfts && nfts.length > 0 ? nfts[idx].image : '/qm.png'}
+            alt=""
+          ></img>
         </div>
         <div className="right">
           <h1>

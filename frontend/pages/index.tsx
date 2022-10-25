@@ -27,9 +27,9 @@ const Home: NextPage = () => {
               <span>fractionalize</span> NFTs
             </h1>
             <p>
-              Fractional ownership of the world&apos;s most sought after NFTs.
-              Fractional reduces entry costs, increases access, and enables new
-              communities.
+              Fractional ownership of the most sought after NFTs on Tron.
+              Fractron increases access, reduces entry costs, and enables new
+              communities to form. Start fractionalizing today!
             </p>
             <Link href="/vaults">
               <a>

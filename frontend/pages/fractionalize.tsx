@@ -68,6 +68,7 @@ const Home: NextPage = () => {
     try {
       let contract = await tronWeb.contract(Fractron.abi, fractron[network]);
 
+      console.log(chosenNFTs);
       const parameters = {
         nftContracts: chosenNFTs.map((chosenNFT) => chosenNFT.address),
         tokenIds: chosenNFTs.map((chosenNFT) => chosenNFT.tokenId),
@@ -77,6 +78,8 @@ const Home: NextPage = () => {
       };
 
       // APPROVE ERROR
+      console.log(parameters);
+
       let currentVaultId = (await contract.currentVaultId().call()).toString();
       console.log('cvi:', currentVaultId);
 
@@ -172,6 +175,7 @@ const Home: NextPage = () => {
         uri.owner = owner;
         uri.address = collection.address;
         uri.isApproved = false;
+        uri.tokenId = data.tokenId;
         setSearchedTokenURI(uri);
       }
     } catch (e) {
@@ -184,8 +188,8 @@ const Home: NextPage = () => {
       console.log('already chosen!');
       return;
     }
-    if (chosenNFTs.length > 6) {
-      console.log('max length is 6!');
+    if (chosenNFTs.length > 10) {
+      console.log('max length is 10!');
       return;
     }
     // check if logged in user is the owner...

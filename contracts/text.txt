@@ -1,0 +1,13 @@
+
+
+why
+
+1.
+As we have seen recently, NFTs can be expensive. When they are too expensive, it's hard for a normal
+person to own one. That's why we are introducing Fractional NFTs to Tron. You can now take for example
+an expensive bored ape, and divide into fractions. The fractions can then be traded wherever you want!
+
+2.
+With this, you can also create something we like to call "NFT Index Funds". Imagine that you are the
+fund manager, and you buy for example 5 bored apes, 5 crypto punks and 10 tronninjas. You can then 
+fractionalize all of these NFTs, and sell the fractions to people that want exposure to your fund!
